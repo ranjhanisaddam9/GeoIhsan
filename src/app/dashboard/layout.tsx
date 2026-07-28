@@ -1,7 +1,22 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getUserProfile } from "@/lib/auth";
 import { LogoutButton } from "./logout-button";
+import { DashboardShell, type NavLink } from "./_components/DashboardShell";
+
+const NAV_LINKS: NavLink[] = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/transactions", label: "Transactions" },
+  { href: "/dashboard/trucks", label: "Trucks" },
+  { href: "/dashboard/drivers", label: "Drivers" },
+  { href: "/dashboard/clients", label: "Clients" },
+  { href: "/dashboard/cities", label: "Cities" },
+  { href: "/dashboard/locations", label: "Locations" },
+  { href: "/dashboard/brokers", label: "Brokers" },
+];
+
+const ADMIN_ONLY_NAV_LINKS: NavLink[] = [
+  { href: "/dashboard/commission", label: "Commission" },
+];
 
 export default async function DashboardLayout({
   children,
@@ -27,33 +42,8 @@ export default async function DashboardLayout({
     );
   }
 
-  return (
-    <div className="flex flex-1 flex-col bg-zinc-50 dark:bg-black">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-6">
-            <span className="text-lg font-semibold text-black dark:text-zinc-50">
-              GeoIhsan
-            </span>
-            <nav className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              <Link
-                href="/dashboard"
-                className="hover:text-black dark:hover:text-zinc-50"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/trucks"
-                className="hover:text-black dark:hover:text-zinc-50"
-              >
-                Trucks
-              </Link>
-            </nav>
-          </div>
-          <LogoutButton />
-        </div>
-      </header>
-      <main className="flex flex-1 flex-col">{children}</main>
-    </div>
-  );
+  const navLinks =
+    profile.role === "admin" ? [...NAV_LINKS, ...ADMIN_ONLY_NAV_LINKS] : NAV_LINKS;
+
+  return <DashboardShell navLinks={navLinks}>{children}</DashboardShell>;
 }

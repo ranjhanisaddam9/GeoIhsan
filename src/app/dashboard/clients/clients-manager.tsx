@@ -17,61 +17,67 @@ import {
   ArrowLeftIcon,
 } from "../_components/icons";
 
-// Trucks have no visible "active/inactive" concept in this UI — every
+// Clients have no visible "active/inactive" concept in this UI — every
 // record is treated as active (the DB column still exists and defaults to
 // true, this page just never surfaces or flips it, which is the cheaper
 // option vs. a migration to drop the column).
-type Truck = {
+type Client = {
   id: string;
-  truck_number: string;
-  truck_type: string | null;
-  capacity: string | null;
+  full_name: string;
+  phone: string | null;
+  whatsapp: string | null;
+  address: string | null;
   created_at: string;
 };
 
-type TruckFormValues = {
-  truck_number: string;
-  truck_type: string;
-  capacity: string;
+type ClientFormValues = {
+  full_name: string;
+  phone: string;
+  whatsapp: string;
+  address: string;
 };
 
-type ModalState = { mode: "add" | "edit" | "details"; truck?: Truck };
+type ModalState = { mode: "add" | "edit" | "details"; client?: Client };
 
-const EMPTY_FORM: TruckFormValues = {
-  truck_number: "",
-  truck_type: "",
-  capacity: "",
+const EMPTY_FORM: ClientFormValues = {
+  full_name: "",
+  phone: "",
+  whatsapp: "",
+  address: "",
 };
 
-const TRUCK_COLUMNS = "id, truck_number, truck_type, capacity, created_at";
+const CLIENT_COLUMNS = "id, full_name, phone, whatsapp, address, created_at";
 
-function friendlyError(error: { code?: string; message: string }) {
-  if (error.code === "23505") return "That truck number already exists.";
-  return error.message;
+function sortByDateDesc(clients: Client[]) {
+  return [...clients].sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
-function sortByDateDesc(trucks: Truck[]) {
-  return [...trucks].sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
-export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
-  const [trucks, setTrucks] = useState<Truck[]>(sortByDateDesc(initialTrucks));
+export function ClientsManager({
+  initialClients,
+}: {
+  initialClients: Client[];
+}) {
+  const [clients, setClients] = useState<Client[]>(sortByDateDesc(initialClients));
   const [search, setSearch] = useState("");
 
   const [modal, setModal] = useState<ModalState | null>(null);
-  const [form, setForm] = useState<TruckFormValues>(EMPTY_FORM);
+  const [form, setForm] = useState<ClientFormValues>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const filteredTrucks = trucks.filter((truck) =>
-    truck.truck_number.toLowerCase().includes(search.trim().toLowerCase()),
+  const query = search.trim().toLowerCase();
+  const filteredClients = clients.filter(
+    (client) =>
+      client.full_name.toLowerCase().includes(query) ||
+      (client.phone ?? "").toLowerCase().includes(query),
   );
 
-  function formFromTruck(truck: Truck): TruckFormValues {
+  function formFromClient(client: Client): ClientFormValues {
     return {
-      truck_number: truck.truck_number,
-      truck_type: truck.truck_type ?? "",
-      capacity: truck.capacity ?? "",
+      full_name: client.full_name,
+      phone: client.phone ?? "",
+      whatsapp: client.whatsapp ?? "",
+      address: client.address ?? "",
     };
   }
 
@@ -81,16 +87,16 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
     setModal({ mode: "add" });
   }
 
-  function openEdit(truck: Truck) {
-    setForm(formFromTruck(truck));
+  function openEdit(client: Client) {
+    setForm(formFromClient(client));
     setFormError(null);
-    setModal({ mode: "edit", truck });
+    setModal({ mode: "edit", client });
   }
 
-  function openDetails(truck: Truck) {
-    setForm(formFromTruck(truck));
+  function openDetails(client: Client) {
+    setForm(formFromClient(client));
     setFormError(null);
-    setModal({ mode: "details", truck });
+    setModal({ mode: "details", client });
   }
 
   function closeModal() {
@@ -103,55 +109,56 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
     if (!modal || modal.mode === "details") return;
     setFormError(null);
 
-    const truck_number = form.truck_number.trim();
-    if (!truck_number) {
-      setFormError("Truck number is required.");
+    const full_name = form.full_name.trim();
+    if (!full_name) {
+      setFormError("Full name is required.");
       return;
     }
 
     setFormLoading(true);
     const supabase = createClient();
     const payload = {
-      truck_number,
-      truck_type: form.truck_type.trim() || null,
-      capacity: form.capacity.trim() || null,
+      full_name,
+      phone: form.phone.trim() || null,
+      whatsapp: form.whatsapp.trim() || null,
+      address: form.address.trim() || null,
     };
 
     if (modal.mode === "add") {
       const { data, error } = await supabase
-        .from("trucks")
+        .from("clients")
         .insert(payload)
-        .select(TRUCK_COLUMNS)
+        .select(CLIENT_COLUMNS)
         .single();
       setFormLoading(false);
 
       if (error) {
-        setFormError(friendlyError(error));
+        setFormError(error.message);
         return;
       }
 
-      setTrucks((prev) => sortByDateDesc([...prev, data as Truck]));
+      setClients((prev) => sortByDateDesc([...prev, data as Client]));
       closeModal();
       return;
     }
 
     // edit
-    const truck = modal.truck as Truck;
+    const client = modal.client as Client;
     const { data, error } = await supabase
-      .from("trucks")
+      .from("clients")
       .update(payload)
-      .eq("id", truck.id)
-      .select(TRUCK_COLUMNS)
+      .eq("id", client.id)
+      .select(CLIENT_COLUMNS)
       .single();
     setFormLoading(false);
 
     if (error) {
-      setFormError(friendlyError(error));
+      setFormError(error.message);
       return;
     }
 
-    setTrucks((prev) =>
-      sortByDateDesc(prev.map((t) => (t.id === truck.id ? (data as Truck) : t))),
+    setClients((prev) =>
+      sortByDateDesc(prev.map((c) => (c.id === client.id ? (data as Client) : c))),
     );
     closeModal();
   }
@@ -159,22 +166,22 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
   const isDetails = modal?.mode === "details";
   const modalTitle =
     modal?.mode === "add"
-      ? "New Truck"
+      ? "New Client"
       : modal?.mode === "edit"
-        ? "Edit Truck"
-        : "Truck Details";
+        ? "Edit Client"
+        : "Client Details";
 
   return (
     <div className="mt-6 flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={openAdd} className={primaryButtonClass}>
           <PlusIcon />
-          New Truck
+          New Client
         </button>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by truck number..."
+          placeholder="Search by name or mobile..."
           className={`${inputClass} flex-1 min-w-[12rem]`}
         />
       </div>
@@ -185,40 +192,51 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Truck number
+                  Full name
                 </label>
                 <input
                   required
                   disabled={isDetails}
-                  value={form.truck_number}
+                  value={form.full_name}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, truck_number: e.target.value }))
+                    setForm((f) => ({ ...f, full_name: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Truck type
+                  Mobile
                 </label>
                 <input
                   disabled={isDetails}
-                  value={form.truck_type}
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                  className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  WhatsApp
+                </label>
+                <input
+                  disabled={isDetails}
+                  value={form.whatsapp}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, truck_type: e.target.value }))
+                    setForm((f) => ({ ...f, whatsapp: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Capacity
+                  Address
                 </label>
                 <input
                   disabled={isDetails}
-                  value={form.capacity}
+                  value={form.address}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, capacity: e.target.value }))
+                    setForm((f) => ({ ...f, address: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
@@ -266,29 +284,30 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
           <thead className="bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
               <th className="px-4 py-2 font-medium">Actions</th>
-              <th className="px-4 py-2 font-medium">Truck Number</th>
-              <th className="px-4 py-2 font-medium">Type</th>
+              <th className="px-4 py-2 font-medium">Full Name</th>
+              <th className="px-4 py-2 font-medium">Mobile</th>
+              <th className="px-4 py-2 font-medium">WhatsApp</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filteredTrucks.length === 0 && (
+            {filteredClients.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400"
                 >
-                  No trucks found.
+                  No clients found.
                 </td>
               </tr>
             )}
 
-            {filteredTrucks.map((truck) => (
-              <tr key={truck.id}>
+            {filteredClients.map((client) => (
+              <tr key={client.id}>
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => openEdit(truck)}
+                      onClick={() => openEdit(client)}
                       aria-label="Edit"
                       title="Edit"
                       className={secondaryButtonClass}
@@ -297,7 +316,7 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => openDetails(truck)}
+                      onClick={() => openDetails(client)}
                       aria-label="Details"
                       title="Details"
                       className={secondaryButtonClass}
@@ -307,10 +326,13 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-2 text-black dark:text-zinc-50">
-                  {truck.truck_number}
+                  {client.full_name}
                 </td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {truck.truck_type ?? "—"}
+                  {client.phone ?? "—"}
+                </td>
+                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
+                  {client.whatsapp ?? "—"}
                 </td>
               </tr>
             ))}

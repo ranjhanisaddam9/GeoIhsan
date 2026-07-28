@@ -17,61 +17,64 @@ import {
   ArrowLeftIcon,
 } from "../_components/icons";
 
-// Trucks have no visible "active/inactive" concept in this UI — every
+// Brokers have no visible "active/inactive" concept in this UI — every
 // record is treated as active (the DB column still exists and defaults to
 // true, this page just never surfaces or flips it, which is the cheaper
-// option vs. a migration to drop the column).
-type Truck = {
+// option vs. a migration to drop the column). Brokers also have no
+// persistent association with locations — those are separate records.
+type Broker = {
   id: string;
-  truck_number: string;
-  truck_type: string | null;
-  capacity: string | null;
+  full_name: string;
+  phone: string | null;
+  whatsapp: string | null;
   created_at: string;
 };
 
-type TruckFormValues = {
-  truck_number: string;
-  truck_type: string;
-  capacity: string;
+type BrokerFormValues = {
+  full_name: string;
+  phone: string;
+  whatsapp: string;
 };
 
-type ModalState = { mode: "add" | "edit" | "details"; truck?: Truck };
+type ModalState = { mode: "add" | "edit" | "details"; broker?: Broker };
 
-const EMPTY_FORM: TruckFormValues = {
-  truck_number: "",
-  truck_type: "",
-  capacity: "",
+const EMPTY_FORM: BrokerFormValues = {
+  full_name: "",
+  phone: "",
+  whatsapp: "",
 };
 
-const TRUCK_COLUMNS = "id, truck_number, truck_type, capacity, created_at";
+const BROKER_COLUMNS = "id, full_name, phone, whatsapp, created_at";
 
-function friendlyError(error: { code?: string; message: string }) {
-  if (error.code === "23505") return "That truck number already exists.";
-  return error.message;
+function sortByDateDesc(brokers: Broker[]) {
+  return [...brokers].sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
-function sortByDateDesc(trucks: Truck[]) {
-  return [...trucks].sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
-export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
-  const [trucks, setTrucks] = useState<Truck[]>(sortByDateDesc(initialTrucks));
+export function BrokersManager({
+  initialBrokers,
+}: {
+  initialBrokers: Broker[];
+}) {
+  const [brokers, setBrokers] = useState<Broker[]>(sortByDateDesc(initialBrokers));
   const [search, setSearch] = useState("");
 
   const [modal, setModal] = useState<ModalState | null>(null);
-  const [form, setForm] = useState<TruckFormValues>(EMPTY_FORM);
+  const [form, setForm] = useState<BrokerFormValues>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const filteredTrucks = trucks.filter((truck) =>
-    truck.truck_number.toLowerCase().includes(search.trim().toLowerCase()),
+  const query = search.trim().toLowerCase();
+  const filteredBrokers = brokers.filter(
+    (broker) =>
+      broker.full_name.toLowerCase().includes(query) ||
+      (broker.phone ?? "").toLowerCase().includes(query),
   );
 
-  function formFromTruck(truck: Truck): TruckFormValues {
+  function formFromBroker(broker: Broker): BrokerFormValues {
     return {
-      truck_number: truck.truck_number,
-      truck_type: truck.truck_type ?? "",
-      capacity: truck.capacity ?? "",
+      full_name: broker.full_name,
+      phone: broker.phone ?? "",
+      whatsapp: broker.whatsapp ?? "",
     };
   }
 
@@ -81,16 +84,16 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
     setModal({ mode: "add" });
   }
 
-  function openEdit(truck: Truck) {
-    setForm(formFromTruck(truck));
+  function openEdit(broker: Broker) {
+    setForm(formFromBroker(broker));
     setFormError(null);
-    setModal({ mode: "edit", truck });
+    setModal({ mode: "edit", broker });
   }
 
-  function openDetails(truck: Truck) {
-    setForm(formFromTruck(truck));
+  function openDetails(broker: Broker) {
+    setForm(formFromBroker(broker));
     setFormError(null);
-    setModal({ mode: "details", truck });
+    setModal({ mode: "details", broker });
   }
 
   function closeModal() {
@@ -103,55 +106,55 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
     if (!modal || modal.mode === "details") return;
     setFormError(null);
 
-    const truck_number = form.truck_number.trim();
-    if (!truck_number) {
-      setFormError("Truck number is required.");
+    const full_name = form.full_name.trim();
+    if (!full_name) {
+      setFormError("Full name is required.");
       return;
     }
 
     setFormLoading(true);
     const supabase = createClient();
     const payload = {
-      truck_number,
-      truck_type: form.truck_type.trim() || null,
-      capacity: form.capacity.trim() || null,
+      full_name,
+      phone: form.phone.trim() || null,
+      whatsapp: form.whatsapp.trim() || null,
     };
 
     if (modal.mode === "add") {
       const { data, error } = await supabase
-        .from("trucks")
+        .from("brokers")
         .insert(payload)
-        .select(TRUCK_COLUMNS)
+        .select(BROKER_COLUMNS)
         .single();
       setFormLoading(false);
 
       if (error) {
-        setFormError(friendlyError(error));
+        setFormError(error.message);
         return;
       }
 
-      setTrucks((prev) => sortByDateDesc([...prev, data as Truck]));
+      setBrokers((prev) => sortByDateDesc([...prev, data as Broker]));
       closeModal();
       return;
     }
 
     // edit
-    const truck = modal.truck as Truck;
+    const broker = modal.broker as Broker;
     const { data, error } = await supabase
-      .from("trucks")
+      .from("brokers")
       .update(payload)
-      .eq("id", truck.id)
-      .select(TRUCK_COLUMNS)
+      .eq("id", broker.id)
+      .select(BROKER_COLUMNS)
       .single();
     setFormLoading(false);
 
     if (error) {
-      setFormError(friendlyError(error));
+      setFormError(error.message);
       return;
     }
 
-    setTrucks((prev) =>
-      sortByDateDesc(prev.map((t) => (t.id === truck.id ? (data as Truck) : t))),
+    setBrokers((prev) =>
+      sortByDateDesc(prev.map((b) => (b.id === broker.id ? (data as Broker) : b))),
     );
     closeModal();
   }
@@ -159,22 +162,22 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
   const isDetails = modal?.mode === "details";
   const modalTitle =
     modal?.mode === "add"
-      ? "New Truck"
+      ? "New Broker"
       : modal?.mode === "edit"
-        ? "Edit Truck"
-        : "Truck Details";
+        ? "Edit Broker"
+        : "Broker Details";
 
   return (
     <div className="mt-6 flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={openAdd} className={primaryButtonClass}>
           <PlusIcon />
-          New Truck
+          New Broker
         </button>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by truck number..."
+          placeholder="Search by name or mobile..."
           className={`${inputClass} flex-1 min-w-[12rem]`}
         />
       </div>
@@ -185,40 +188,38 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Truck number
+                  Full name
                 </label>
                 <input
                   required
                   disabled={isDetails}
-                  value={form.truck_number}
+                  value={form.full_name}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, truck_number: e.target.value }))
+                    setForm((f) => ({ ...f, full_name: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Truck type
+                  Mobile
                 </label>
                 <input
                   disabled={isDetails}
-                  value={form.truck_type}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, truck_type: e.target.value }))
-                  }
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Capacity
+                  WhatsApp
                 </label>
                 <input
                   disabled={isDetails}
-                  value={form.capacity}
+                  value={form.whatsapp}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, capacity: e.target.value }))
+                    setForm((f) => ({ ...f, whatsapp: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />
@@ -266,29 +267,30 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
           <thead className="bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
             <tr>
               <th className="px-4 py-2 font-medium">Actions</th>
-              <th className="px-4 py-2 font-medium">Truck Number</th>
-              <th className="px-4 py-2 font-medium">Type</th>
+              <th className="px-4 py-2 font-medium">Full Name</th>
+              <th className="px-4 py-2 font-medium">Mobile</th>
+              <th className="px-4 py-2 font-medium">WhatsApp</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {filteredTrucks.length === 0 && (
+            {filteredBrokers.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400"
                 >
-                  No trucks found.
+                  No brokers found.
                 </td>
               </tr>
             )}
 
-            {filteredTrucks.map((truck) => (
-              <tr key={truck.id}>
+            {filteredBrokers.map((broker) => (
+              <tr key={broker.id}>
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => openEdit(truck)}
+                      onClick={() => openEdit(broker)}
                       aria-label="Edit"
                       title="Edit"
                       className={secondaryButtonClass}
@@ -297,7 +299,7 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => openDetails(truck)}
+                      onClick={() => openDetails(broker)}
                       aria-label="Details"
                       title="Details"
                       className={secondaryButtonClass}
@@ -307,10 +309,13 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
                   </div>
                 </td>
                 <td className="px-4 py-2 text-black dark:text-zinc-50">
-                  {truck.truck_number}
+                  {broker.full_name}
                 </td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {truck.truck_type ?? "—"}
+                  {broker.phone ?? "—"}
+                </td>
+                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
+                  {broker.whatsapp ?? "—"}
                 </td>
               </tr>
             ))}
