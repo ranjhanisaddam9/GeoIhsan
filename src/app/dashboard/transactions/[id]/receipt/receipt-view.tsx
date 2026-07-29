@@ -94,22 +94,7 @@ function ChargeRow({
   );
 }
 
-export function ReceiptView({
-  transaction,
-  fromCityName,
-  toCityName,
-  destinationLocationName,
-  destinationAddress,
-  destinationCityName,
-  truckNumber,
-  driverName,
-  driverPhone,
-  clientName,
-  brokerName,
-  brokerPhone,
-  printedByUsername,
-  language,
-}: {
+type ReceiptCardProps = {
   transaction: ReceiptTransaction;
   fromCityName: string;
   toCityName: string;
@@ -124,7 +109,24 @@ export function ReceiptView({
   brokerPhone: string | null;
   printedByUsername: string;
   language: ReceiptLanguage;
-}) {
+};
+
+function ReceiptCard({
+  transaction,
+  fromCityName,
+  toCityName,
+  destinationLocationName,
+  destinationAddress,
+  destinationCityName,
+  truckNumber,
+  driverName,
+  driverPhone,
+  clientName,
+  brokerName,
+  brokerPhone,
+  printedByUsername,
+  language,
+}: ReceiptCardProps) {
   const labels = getReceiptLabels(language);
   const isRtl = language === "urdu" || language === "sindhi";
   const receiverValue = destinationLocationName
@@ -134,29 +136,11 @@ export function ReceiptView({
     : null;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-8 print:max-w-none print:px-0 print:py-0">
-      <style>{"@media print { @page { size: A5; margin: 6mm 6mm 3mm 6mm; } }"}</style>
-
-      <div className="mb-6 flex items-center justify-between print:hidden">
-        <Link href="/dashboard/transactions" className={secondaryButtonClass}>
-          <ArrowLeftIcon />
-          Back to Transactions
-        </Link>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className={primaryButtonClass}
-        >
-          <PrinterIcon />
-          Print
-        </button>
-      </div>
-
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className="rounded-lg border-2 border-zinc-900 bg-white p-6 pb-3 text-black print:rounded-none print:border print:p-[5px] print:pb-[5px]"
+        className="w-full max-w-2xl overflow-hidden rounded-lg border-2 border-zinc-900 bg-white p-6 pb-3 text-black print:max-w-none print:min-w-0 print:flex-1 print:basis-0 print:rounded-none print:border print:p-[5px] print:pb-[5px]"
       >
-        <div className="border-b-2 border-zinc-900">
+        <div className="-mx-6 -mt-6 border-b-2 border-zinc-900 print:-mx-[5px] print:-mt-[5px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/Banner-Txt.png"
@@ -305,6 +289,34 @@ export function ReceiptView({
             {labels.printedBy} {printedByUsername}
           </span>
         </div>
+      </div>
+  );
+}
+
+export function ReceiptView(props: ReceiptCardProps) {
+  return (
+    <div className="mx-auto w-full max-w-2xl px-6 py-8 print:max-w-none print:w-full print:px-0 print:py-0">
+      <style>{"@media print { @page { size: A4 landscape; margin: 10mm; } }"}</style>
+
+      <div className="mb-6 flex items-center justify-between print:hidden">
+        <Link href="/dashboard/transactions" className={secondaryButtonClass}>
+          <ArrowLeftIcon />
+          Back to Transactions
+        </Link>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className={primaryButtonClass}
+        >
+          <PrinterIcon />
+          Print
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center gap-10 print:flex-row print:items-stretch print:justify-center print:gap-[6mm]">
+        <ReceiptCard {...props} />
+        <div className="hidden print:block print:border-l print:border-dashed print:border-zinc-400" />
+        <ReceiptCard {...props} />
       </div>
     </div>
   );

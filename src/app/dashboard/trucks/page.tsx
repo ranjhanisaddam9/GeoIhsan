@@ -6,7 +6,7 @@ export default async function TrucksPage() {
 
   const { data: trucks } = await supabase
     .from("trucks")
-    .select("id, truck_number, truck_type, capacity, created_at")
+    .select("id, truck_number, truck_type, capacity, owner_details, created_at")
     .order("created_at", { ascending: false });
 
   return (

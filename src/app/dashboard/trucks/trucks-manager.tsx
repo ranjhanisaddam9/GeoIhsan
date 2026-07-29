@@ -26,6 +26,7 @@ type Truck = {
   truck_number: string;
   truck_type: string | null;
   capacity: string | null;
+  owner_details: string | null;
   created_at: string;
 };
 
@@ -33,6 +34,7 @@ type TruckFormValues = {
   truck_number: string;
   truck_type: string;
   capacity: string;
+  owner_details: string;
 };
 
 type ModalState = { mode: "add" | "edit" | "details"; truck?: Truck };
@@ -41,9 +43,11 @@ const EMPTY_FORM: TruckFormValues = {
   truck_number: "",
   truck_type: "",
   capacity: "",
+  owner_details: "",
 };
 
-const TRUCK_COLUMNS = "id, truck_number, truck_type, capacity, created_at";
+const TRUCK_COLUMNS =
+  "id, truck_number, truck_type, capacity, owner_details, created_at";
 
 function friendlyError(error: { code?: string; message: string }) {
   if (error.code === "23505") return "That truck number already exists.";
@@ -72,6 +76,7 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
       truck_number: truck.truck_number,
       truck_type: truck.truck_type ?? "",
       capacity: truck.capacity ?? "",
+      owner_details: truck.owner_details ?? "",
     };
   }
 
@@ -115,6 +120,7 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
       truck_number,
       truck_type: form.truck_type.trim() || null,
       capacity: form.capacity.trim() || null,
+      owner_details: form.owner_details.trim() || null,
     };
 
     if (modal.mode === "add") {
@@ -219,6 +225,19 @@ export function TrucksManager({ initialTrucks }: { initialTrucks: Truck[] }) {
                   value={form.capacity}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, capacity: e.target.value }))
+                  }
+                  className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Owner Details
+                </label>
+                <input
+                  disabled={isDetails}
+                  value={form.owner_details}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, owner_details: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />

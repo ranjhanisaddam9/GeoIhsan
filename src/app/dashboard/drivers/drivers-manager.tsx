@@ -30,6 +30,7 @@ type Driver = {
   cnic: string | null;
   phone: string | null;
   whatsapp: string | null;
+  care_of_details: string | null;
   created_at: string;
 };
 
@@ -39,6 +40,7 @@ type DriverFormValues = {
   cnic: string;
   phone: string;
   whatsapp: string;
+  care_of_details: string;
 };
 
 type ModalState = { mode: "add" | "edit" | "details"; driver?: Driver };
@@ -49,10 +51,11 @@ const EMPTY_FORM: DriverFormValues = {
   cnic: "",
   phone: "",
   whatsapp: "",
+  care_of_details: "",
 };
 
 const DRIVER_COLUMNS =
-  "id, full_name, father_name, cnic, phone, whatsapp, created_at";
+  "id, full_name, father_name, cnic, phone, whatsapp, care_of_details, created_at";
 
 function friendlyError(error: { code?: string; message: string }) {
   if (error.code === "23514") {
@@ -124,6 +127,7 @@ export function DriversManager({
       cnic: driver.cnic ?? "",
       phone: driver.phone ?? "",
       whatsapp: driver.whatsapp ?? "",
+      care_of_details: driver.care_of_details ?? "",
     };
   }
 
@@ -175,6 +179,7 @@ export function DriversManager({
       cnic: form.cnic.trim() || null,
       phone: normalizedPhoneOrNull(form.phone),
       whatsapp: form.whatsapp.trim() || null,
+      care_of_details: form.care_of_details.trim() || null,
     };
 
     if (modal.mode === "add") {
@@ -321,6 +326,19 @@ export function DriversManager({
                   }}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, whatsapp: e.target.value }))
+                  }
+                  className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Care of Details
+                </label>
+                <input
+                  disabled={isDetails}
+                  value={form.care_of_details}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, care_of_details: e.target.value }))
                   }
                   className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                 />

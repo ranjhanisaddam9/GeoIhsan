@@ -6,7 +6,9 @@ export default async function DriversPage() {
 
   const { data: drivers } = await supabase
     .from("drivers")
-    .select("id, full_name, father_name, cnic, phone, whatsapp, created_at")
+    .select(
+      "id, full_name, father_name, cnic, phone, whatsapp, care_of_details, created_at",
+    )
     .order("created_at", { ascending: false });
 
   return (
