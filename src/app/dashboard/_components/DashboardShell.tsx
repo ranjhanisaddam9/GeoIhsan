@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { primaryButtonClass } from "./ui";
 import { LogoutButton } from "../logout-button";
 
-export type NavLink = { href: string; label: string };
+export type NavLink = { href: string; label: string; icon: React.ReactNode };
 
 function isActiveLink(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
@@ -50,16 +50,24 @@ export function DashboardShell({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 print:hidden dark:border-zinc-800 dark:bg-zinc-950 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-hidden border-r border-zinc-200 bg-white transition-transform duration-200 print:hidden dark:border-zinc-800 dark:bg-zinc-950 lg:relative lg:z-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <span className="text-lg font-semibold text-green-700 dark:text-green-400">
-            GeoIhsan
-          </span>
+        <div
+          className="pointer-events-none absolute inset-0 bg-cover bg-top bg-no-repeat opacity-50"
+          style={{ backgroundImage: "url('/sidepanel.png')" }}
+        />
+        <div className="relative flex items-center justify-center border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/log0.png"
+            alt="GeoIhsan"
+            className="w-auto"
+            style={{ height: "clamp(2.5rem, -0.5rem + 11.5vw, 10rem)" }}
+          />
         </div>
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+        <nav className="relative flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
           {navLinks.map((link) => {
             const active = isActiveLink(pathname, link.href);
             return (
@@ -69,10 +77,11 @@ export function DashboardShell({
                 onClick={closeIfMobile}
                 className={
                   active
-                    ? "rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300"
-                    : "rounded-md px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
+                    ? "flex items-center gap-2.5 rounded-md bg-green-50 px-3 py-2 text-sm font-bold text-green-700 dark:bg-green-950 dark:text-green-300"
+                    : "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-bold text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
                 }
               >
+                {link.icon}
                 {link.label}
               </Link>
             );
@@ -81,7 +90,10 @@ export function DashboardShell({
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 print:hidden dark:border-zinc-800 dark:bg-zinc-950 sm:px-6">
+        <header
+          className="flex items-center justify-between border-b border-zinc-200 bg-white bg-repeat-y px-4 py-3 print:hidden dark:border-zinc-800 dark:bg-zinc-950 sm:px-6"
+          style={{ backgroundImage: "url('/header.png')", backgroundSize: "100% auto" }}
+        >
           <button
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}

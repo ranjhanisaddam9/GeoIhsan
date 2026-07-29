@@ -174,6 +174,179 @@ export function ArrowPathIcon({ className = base }: IconProps) {
   );
 }
 
+export function HomeIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 9.5 10 3l7 6.5M5 8v8h10V8"
+      />
+    </svg>
+  );
+}
+
+export function ClipboardListIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="4.5" y="3.5" width="11" height="14" rx="1.5" />
+      <path strokeLinecap="round" d="M7.5 3v-.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V3M7 8h6M7 11h6M7 14h4" />
+    </svg>
+  );
+}
+
+export function TruckIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2 5.5h9v8H2v-8ZM11 8.5h3.5L16 10.5v3H11v-5Z" />
+      <circle cx="5.5" cy="15" r="1.5" />
+      <circle cx="13" cy="15" r="1.5" />
+    </svg>
+  );
+}
+
+export function UserIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="10" cy="6.5" r="3" />
+      <path strokeLinecap="round" d="M3.5 17c.7-3.4 3.5-5.5 6.5-5.5s5.8 2.1 6.5 5.5" />
+    </svg>
+  );
+}
+
+export function UsersIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="7" cy="6.5" r="2.5" />
+      <circle cx="14" cy="7.5" r="2" />
+      <path strokeLinecap="round" d="M2 17c.6-3 2.6-4.8 5-4.8s4.4 1.8 5 4.8M13 12.5c2.1.1 3.7 1.7 4.2 4" />
+    </svg>
+  );
+}
+
+export function BuildingIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="4" y="2.5" width="8" height="15" rx="0.5" />
+      <path strokeLinecap="round" d="M7 6h2M7 9h2M7 12h2M12 8h4v9.5h-4" />
+    </svg>
+  );
+}
+
+export function MapPinIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10 17.5S16 12 16 7.8A6 6 0 0 0 4 7.8C4 12 10 17.5 10 17.5Z"
+      />
+      <circle cx="10" cy="7.8" r="2" />
+    </svg>
+  );
+}
+
+export function BriefcaseIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="2.5" y="6" width="15" height="10" rx="1.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 6V4.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V6M2.5 10.5h15" />
+    </svg>
+  );
+}
+
+export function PercentIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" d="M15.5 4.5 4.5 15.5" />
+      <circle cx="6" cy="6" r="2" />
+      <circle cx="14" cy="14" r="2" />
+    </svg>
+  );
+}
+
+export function CogIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="10" cy="10" r="2.5" />
+      <path
+        strokeLinecap="round"
+        d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3 4.9 4.9"
+      />
+    </svg>
+  );
+}
+
 export function PhoneIcon({ className = base }: IconProps) {
   return (
     <svg

@@ -338,7 +338,9 @@ export function TransactionForm({
 
     // Opened synchronously (before any await) so browsers don't treat it as
     // a blocked popup — redirected to the receipt once the save resolves.
-    const printWindow = andPrint ? window.open("", "_blank", "noopener,noreferrer") : null;
+    // No noopener/noreferrer: those make window.open() return null, and we
+    // need the reference below to navigate the tab once saving finishes.
+    const printWindow = andPrint ? window.open("", "_blank") : null;
 
     setLoading(true);
     const supabase = createClient();
