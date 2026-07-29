@@ -326,8 +326,7 @@ export function TransactionForm({
   const commissionBalance =
     toNumber(form.commission_amount) - toNumber(form.commission_paid);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function saveTransaction(andPrint: boolean) {
     if (isDetails) return;
     setError(null);
 
@@ -336,6 +335,10 @@ export function TransactionForm({
       setError(validationError);
       return;
     }
+
+    // Opened synchronously (before any await) so browsers don't treat it as
+    // a blocked popup — redirected to the receipt once the save resolves.
+    const printWindow = andPrint ? window.open("", "_blank", "noopener,noreferrer") : null;
 
     setLoading(true);
     const supabase = createClient();
@@ -379,6 +382,7 @@ export function TransactionForm({
 
     if (saveError) {
       setError(saveError.message);
+      printWindow?.close();
       return;
     }
 
@@ -393,7 +397,18 @@ export function TransactionForm({
       // transaction save that already succeeded above.
     }
 
-    onSaved((data as unknown as { id: string }).id);
+    const savedId = (data as unknown as { id: string }).id;
+
+    if (printWindow) {
+      printWindow.location.href = `/dashboard/transactions/${savedId}/receipt`;
+    }
+
+    onSaved(savedId);
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await saveTransaction(false);
   }
 
   const quickAddTitle =
@@ -768,12 +783,20 @@ export function TransactionForm({
             )
           ) : (
             <>
-              <button type="submit" disabled={loading} className={primaryButtonClass}>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => saveTransaction(true)}
+                className={primaryButtonClass}
+              >
                 {loading
                   ? "Saving..."
                   : mode === "create"
-                    ? "Create Transaction"
-                    : "Save Changes"}
+                    ? "Save and Print"
+                    : "Update and Print"}
+              </button>
+              <button type="submit" disabled={loading} className={secondaryButtonClass}>
+                {loading ? "Saving..." : "Save"}
               </button>
               {onCancel && (
                 <button

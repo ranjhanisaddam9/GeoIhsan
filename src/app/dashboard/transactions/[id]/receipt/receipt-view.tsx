@@ -88,8 +88,8 @@ function ChargeRow({
 }) {
   return (
     <tr className={bold ? "font-semibold" : ""}>
-      <td className={`py-1 ${rightAlignLabel ? "text-right" : ""}`}>{label}</td>
-      <td className="py-1 text-right">{formatMoney(value)}</td>
+      <td className={`py-1 ${rightAlignLabel ? "text-end" : ""}`}>{label}</td>
+      <td className="py-1 text-end">{formatMoney(value)}</td>
     </tr>
   );
 }
@@ -126,6 +126,7 @@ export function ReceiptView({
   language: ReceiptLanguage;
 }) {
   const labels = getReceiptLabels(language);
+  const isRtl = language === "urdu" || language === "sindhi";
   const receiverValue = destinationLocationName
     ? [destinationLocationName, destinationAddress, destinationCityName]
         .filter(Boolean)
@@ -151,10 +152,17 @@ export function ReceiptView({
         </button>
       </div>
 
-      <div className="rounded-lg border-2 border-zinc-900 bg-white p-6 pb-3 text-black print:rounded-none print:border print:p-[5px] print:pb-[5px]">
-        <div className="border-b-2 border-zinc-900 pb-1">
-          <h1 className="text-2xl font-bold">GeoIhsan</h1>
-          <p className="text-xs text-zinc-600">{labels.companyTagline}</p>
+      <div
+        dir={isRtl ? "rtl" : "ltr"}
+        className="rounded-lg border-2 border-zinc-900 bg-white p-6 pb-3 text-black print:rounded-none print:border print:p-[5px] print:pb-[5px]"
+      >
+        <div className="border-b-2 border-zinc-900">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Banner-Txt.png"
+            alt="GeoIhsan"
+            className="block h-auto w-full object-cover"
+          />
         </div>
 
         {transaction.is_voided && (
@@ -191,7 +199,7 @@ export function ReceiptView({
             <col className="w-[30%]" />
           </colgroup>
           <thead>
-            <tr className="border-b border-zinc-400 text-left font-medium text-zinc-600">
+            <tr className="border-b border-zinc-400 text-start font-medium text-zinc-600">
               <th className="pt-0 pb-1">{labels.item}</th>
               <th className="pt-0 pb-1">{labels.qty}</th>
               <th className="pt-0 pb-1">{labels.weightKg}</th>
@@ -237,7 +245,7 @@ export function ReceiptView({
               </td>
             </tr>
             <tr>
-              <td colSpan={3} className="pt-1 pb-0 text-left align-bottom">
+              <td colSpan={3} className="pt-1 pb-0 text-start align-bottom">
                 <span className="font-medium text-zinc-600">{labels.coBroker}: </span>
                 {phoneJoin(brokerName, brokerPhone)}
               </td>
@@ -264,13 +272,13 @@ export function ReceiptView({
 
         <div className="mt-3 text-xs text-zinc-700">
           <p className="font-bold">{labels.note}</p>
-          <ol className="list-decimal space-y-0.5 pl-4">
+          <ol className="list-decimal space-y-0.5 ps-4">
             <li>{labels.noteWeight}</li>
             <li>{labels.noteTarping}</li>
             <li className="font-bold">{labels.emergencyContact}</li>
           </ol>
-          <p className="pl-4">
-            Muhammad Azeem (
+          <p className="ps-4">
+            M. Azeem (
             <WhatsAppNumbers
               numbers={[
                 { value: "03003038810" },
@@ -280,7 +288,7 @@ export function ReceiptView({
             />
             )
           </p>
-          <p className="pl-4">
+          <p className="ps-4">
             A. Nawaz (
             <WhatsAppNumbers
               numbers={[{ value: "03443115466" }, { value: "03073356638", icon: "phone" }]}
