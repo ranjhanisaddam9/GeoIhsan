@@ -16,7 +16,9 @@ import { QuickAddDriver } from "./quick-add-driver";
 import { QuickAddClient } from "./quick-add-client";
 import { QuickAddBroker } from "./quick-add-broker";
 import { QuickAddCity } from "./quick-add-city";
+import { QuickAddLocation } from "./quick-add-location";
 import type {
+  LocationOption,
   SimpleOption,
   TransactionFormReferenceData,
 } from "./get-form-reference-data";
@@ -193,8 +195,9 @@ export function TransactionForm({
   const [extraClients, setExtraClients] = useState<SimpleOption[]>([]);
   const [extraBrokers, setExtraBrokers] = useState<SimpleOption[]>([]);
   const [extraCities, setExtraCities] = useState<SimpleOption[]>([]);
+  const [extraLocations, setExtraLocations] = useState<LocationOption[]>([]);
   const [quickAdd, setQuickAdd] = useState<
-    | { kind: "truck" | "driver" | "client" | "broker"; query: string }
+    | { kind: "truck" | "driver" | "client" | "broker" | "location"; query: string }
     | { kind: "city"; query: string; target: "from" | "to" }
     | null
   >(null);
@@ -274,6 +277,16 @@ export function TransactionForm({
     closeQuickAdd();
   }
 
+  function handleLocationCreated(row: { id: string; name: string; city_id: string }) {
+    const cityLabel = cityOptions.find((c) => c.id === row.city_id)?.label ?? "—";
+    setExtraLocations((prev) => [
+      ...prev,
+      { id: row.id, label: row.name, cityLabel },
+    ]);
+    set("to_location_id", row.id);
+    closeQuickAdd();
+  }
+
   function handleCityCreated(row: { id: string; name: string }) {
     const target = quickAdd?.kind === "city" ? quickAdd.target : null;
     setExtraCities((prev) => [...prev, { id: row.id, label: row.name }]);
@@ -289,8 +302,8 @@ export function TransactionForm({
 
   const cityOptions = [...referenceData.cities, ...extraCities];
   const careOfLocationOptions = withCurrentOption(
-    referenceData.activeLocations,
-    referenceData.allLocations,
+    [...referenceData.activeLocations, ...extraLocations],
+    [...referenceData.allLocations, ...extraLocations],
     form.to_location_id,
   );
   const truckOptions = withCurrentOption(
@@ -424,7 +437,9 @@ export function TransactionForm({
             ? "New Broker"
             : quickAdd?.kind === "city"
               ? "New City"
-              : "";
+              : quickAdd?.kind === "location"
+                ? "New Location"
+                : "";
 
   return (
     <>
@@ -600,6 +615,12 @@ export function TransactionForm({
               value={form.to_location_id}
               onChange={(id) => set("to_location_id", id)}
               placeholder="Search location..."
+              onAddNew={
+                isDetails
+                  ? undefined
+                  : (query) => setQuickAdd({ kind: "location", query })
+              }
+              addNewLabel="location"
             />
           </div>
 
@@ -850,6 +871,15 @@ export function TransactionForm({
           <QuickAddCity
             initialValue={quickAdd.query}
             onCreated={handleCityCreated}
+            onCancel={closeQuickAdd}
+          />
+        )}
+        {quickAdd?.kind === "location" && (
+          <QuickAddLocation
+            initialValue={quickAdd.query}
+            cityOptions={cityOptions}
+            initialCityId={form.to_city_id}
+            onCreated={handleLocationCreated}
             onCancel={closeQuickAdd}
           />
         )}
