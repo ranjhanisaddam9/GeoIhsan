@@ -13,9 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GeoIhsan",
+  title: "Geo Ihsan",
   description:
     "Trucking station management system for managing trucks, drivers, clients, and transport transactions",
+  icons: {
+    icon: "/ico1.png",
+  },
 };
 
 export default function RootLayout({
