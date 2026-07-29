@@ -45,12 +45,12 @@ export function DashboardShell({
         <div
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden print:hidden"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 dark:border-zinc-800 dark:bg-zinc-950 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 print:hidden dark:border-zinc-800 dark:bg-zinc-950 lg:static lg:z-auto ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
         }`}
       >
@@ -81,7 +81,7 @@ export function DashboardShell({
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 sm:px-6">
+        <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 print:hidden dark:border-zinc-800 dark:bg-zinc-950 sm:px-6">
           <button
             type="button"
             onClick={() => setSidebarOpen((v) => !v)}

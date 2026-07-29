@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "../_components/ui";
 import { DateRangeFilter } from "../_components/DateRangeFilter";
 import { Modal } from "../_components/Modal";
 import { isWithinDateRange } from "../_components/date-utils";
-import { PlusIcon, PencilIcon, EyeIcon, TrashIcon } from "../_components/icons";
+import { PlusIcon, PencilIcon, EyeIcon, TrashIcon, PrinterIcon } from "../_components/icons";
 import { TransactionForm, type TransactionFormValues } from "./transaction-form";
 import { TRANSACTION_COLUMNS } from "./transaction-constants";
 import type { SimpleOption, TransactionFormReferenceData } from "./get-form-reference-data";
@@ -221,6 +222,17 @@ export function TransactionsManager({
       </div>
 
       <Modal open={modal !== null} onClose={closeModal} title={modalTitle} wide>
+        {modal && modal.mode === "details" && (
+          <div className="mb-4 flex justify-end">
+            <Link
+              href={`/dashboard/transactions/${modal.transaction.id}/receipt`}
+              className={secondaryButtonClass}
+            >
+              <PrinterIcon />
+              Print Receipt
+            </Link>
+          </div>
+        )}
         {modal && modal.mode !== "delete" && (
           <TransactionForm
             mode={modal.mode === "add" ? "create" : modal.mode}
@@ -320,6 +332,14 @@ export function TransactionsManager({
                     >
                       <TrashIcon />
                     </button>
+                    <Link
+                      href={`/dashboard/transactions/${t.id}/receipt`}
+                      aria-label="Receipt"
+                      title="Receipt"
+                      className={secondaryButtonClass}
+                    >
+                      <PrinterIcon />
+                    </Link>
                   </div>
                 </td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">

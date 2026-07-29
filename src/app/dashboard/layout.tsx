@@ -16,6 +16,7 @@ const NAV_LINKS: NavLink[] = [
 
 const ADMIN_ONLY_NAV_LINKS: NavLink[] = [
   { href: "/dashboard/commission", label: "Commission" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 export default async function DashboardLayout({
