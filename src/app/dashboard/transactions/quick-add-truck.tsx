@@ -24,6 +24,7 @@ export function QuickAddTruck({
   const [truckNumber, setTruckNumber] = useState(initialValue);
   const [truckType, setTruckType] = useState("");
   const [capacity, setCapacity] = useState("");
+  const [ownerDetails, setOwnerDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -45,6 +46,7 @@ export function QuickAddTruck({
         truck_number: trimmed,
         truck_type: truckType.trim() || null,
         capacity: capacity.trim() || null,
+        owner_details: ownerDetails.trim() || null,
       })
       .select(TRUCK_COLUMNS)
       .single();
@@ -90,6 +92,16 @@ export function QuickAddTruck({
           <input
             value={capacity}
             onChange={(e) => setCapacity(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Owner Details
+          </label>
+          <input
+            value={ownerDetails}
+            onChange={(e) => setOwnerDetails(e.target.value)}
             className={inputClass}
           />
         </div>

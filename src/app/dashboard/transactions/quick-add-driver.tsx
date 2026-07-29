@@ -43,6 +43,7 @@ export function QuickAddDriver({
   const [cnic, setCnic] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [careOfDetails, setCareOfDetails] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -82,6 +83,7 @@ export function QuickAddDriver({
         cnic: cnic.trim() || null,
         phone: trimmedPhone && trimmedPhone !== "03" ? trimmedPhone : null,
         whatsapp: whatsapp.trim() || null,
+        care_of_details: careOfDetails.trim() || null,
       })
       .select(DRIVER_COLUMNS)
       .single();
@@ -162,6 +164,16 @@ export function QuickAddDriver({
               }
             }}
             onChange={(e) => setWhatsapp(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Care of Details
+          </label>
+          <input
+            value={careOfDetails}
+            onChange={(e) => setCareOfDetails(e.target.value)}
             className={inputClass}
           />
         </div>
