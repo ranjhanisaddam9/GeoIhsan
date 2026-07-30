@@ -39,12 +39,10 @@ export function PendingCommissionList({
   initialRows,
   driverOptions,
   truckOptions,
-  userOptions,
 }: {
   initialRows: PendingCommissionRow[];
   driverOptions: Option[];
   truckOptions: Option[];
-  userOptions: Option[];
 }) {
   const [rows, setRows] = useState<PendingCommissionRow[]>(sortPending(initialRows));
   const [active, setActive] = useState<PendingCommissionRow | null>(null);
@@ -198,13 +196,12 @@ export function PendingCommissionList({
               <th className="px-4 py-2 font-medium">Driver</th>
               <th className="px-4 py-2 font-medium">Truck#</th>
               <th className="px-4 py-2 font-medium">Balance Due</th>
-              <th className="px-4 py-2 font-medium">Received by</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400">
                   No commission outstanding.
                 </td>
               </tr>
@@ -237,9 +234,6 @@ export function PendingCommissionList({
                 </td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
                   {formatMoney(row.commission_balance)}
-                </td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {labelFor(userOptions, row.commission_received_by)}
                 </td>
               </tr>
             ))}

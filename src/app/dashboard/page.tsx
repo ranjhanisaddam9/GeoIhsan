@@ -27,7 +27,6 @@ export default async function DashboardPage() {
     { data: drivers },
     { data: transactions },
     { data: pendingCommission },
-    { data: profiles },
   ] = await Promise.all([
     supabase.from("client_waitlist").select(CLIENT_WAITLIST_COLUMNS),
     supabase.from("truck_waitlist").select(TRUCK_WAITLIST_COLUMNS),
@@ -48,7 +47,6 @@ export default async function DashboardPage() {
       )
       .eq("is_voided", false)
       .gt("commission_balance", 0),
-    supabase.from("profiles").select("id, full_name, username"),
   ]);
 
   const cityOptions = (cities ?? []).map((c) => ({ id: c.id, label: c.name }));
@@ -75,11 +73,6 @@ export default async function DashboardPage() {
     .filter((t) => t.is_active)
     .map((t) => ({ id: t.id, label: t.truck_number }));
 
-  const userOptions = (profiles ?? []).map((p) => ({
-    id: p.id,
-    label: p.full_name ?? p.username ?? "—",
-  }));
-
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
       <div>
@@ -102,7 +95,6 @@ export default async function DashboardPage() {
         initialRows={(pendingCommission ?? []) as unknown as PendingCommissionRow[]}
         driverOptions={allDriverOptions}
         truckOptions={allTruckOptions}
-        userOptions={userOptions}
       />
 
       <ClientWaitlistManager
