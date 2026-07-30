@@ -4,14 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { primaryButtonClass } from "./ui";
+import { ChevronDownIcon } from "./icons";
 import { LogoutButton } from "../logout-button";
 
-export type NavLink = { href: string; label: string; icon: React.ReactNode };
+export type NavChildLink = { href: string; label: string };
+
+// A nav entry is either a plain link or, when it has children, a collapsible
+// group whose own href is only used to tell whether the group is active.
+export type NavLink = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  children?: NavChildLink[];
+};
 
 function isActiveLink(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+const linkBaseClass = "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-bold";
+const activeLinkClass = `${linkBaseClass} bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300`;
+const idleLinkClass = `${linkBaseClass} text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50`;
 
 export function DashboardShell({
   navLinks,
@@ -22,6 +36,9 @@ export function DashboardShell({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Only holds groups the user has explicitly toggled; the rest fall back to
+  // "open if you're inside them".
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   // Default to open (matches the no-JS/SSR render), but collapse on small
   // screens once we know the real viewport. Deliberately runs post-mount
@@ -70,20 +87,61 @@ export function DashboardShell({
         <nav className="relative flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
           {navLinks.map((link) => {
             const active = isActiveLink(pathname, link.href);
+
+            if (!link.children) {
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeIfMobile}
+                  className={active ? activeLinkClass : idleLinkClass}
+                >
+                  {link.icon}
+                  {link.label}
+                </Link>
+              );
+            }
+
+            // Groups stay open while you're inside them, and can be toggled
+            // otherwise.
+            const expanded = openGroups[link.href] ?? active;
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeIfMobile}
-                className={
-                  active
-                    ? "flex items-center gap-2.5 rounded-md bg-green-50 px-3 py-2 text-sm font-bold text-green-700 dark:bg-green-950 dark:text-green-300"
-                    : "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-bold text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
-                }
-              >
-                {link.icon}
-                {link.label}
-              </Link>
+              <div key={link.href} className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  onClick={() =>
+                    setOpenGroups((prev) => ({ ...prev, [link.href]: !expanded }))
+                  }
+                  className={`${active ? activeLinkClass : idleLinkClass} w-full text-left`}
+                >
+                  {link.icon}
+                  <span className="flex-1">{link.label}</span>
+                  <ChevronDownIcon
+                    className={`h-4 w-4 shrink-0 transition-transform ${
+                      expanded ? "" : "-rotate-90"
+                    }`}
+                  />
+                </button>
+                {expanded && (
+                  <div className="flex flex-col gap-1 ps-7">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={closeIfMobile}
+                        className={
+                          isActiveLink(pathname, child.href)
+                            ? "rounded-md bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300"
+                            : "rounded-md px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-black dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
+                        }
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

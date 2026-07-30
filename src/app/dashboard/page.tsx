@@ -7,6 +7,11 @@ import {
   PendingCommissionList,
   type PendingCommissionRow,
 } from "./pending-commission-list";
+import {
+  PeriodSummaryTabs,
+  type SummaryExpense,
+  type SummaryTransaction,
+} from "./period-summary-tabs";
 import { CLIENT_WAITLIST_COLUMNS, TRUCK_WAITLIST_COLUMNS } from "./waitlist-shared";
 
 export default async function DashboardPage() {
@@ -27,6 +32,7 @@ export default async function DashboardPage() {
     { data: drivers },
     { data: transactions },
     { data: pendingCommission },
+    { data: expenses },
   ] = await Promise.all([
     supabase.from("client_waitlist").select(CLIENT_WAITLIST_COLUMNS),
     supabase.from("truck_waitlist").select(TRUCK_WAITLIST_COLUMNS),
@@ -34,9 +40,13 @@ export default async function DashboardPage() {
     supabase.from("clients").select("id, full_name, phone, is_active"),
     supabase.from("trucks").select("id, truck_number, is_active"),
     supabase.from("drivers").select("id, full_name, phone, is_active"),
+    // Backs both the Top 5 rankings and the period summary cards.
     supabase
       .from("transactions")
-      .select("transaction_date, truck_id, driver_id, client_id")
+      .select(
+        "transaction_date, truck_id, driver_id, client_id, " +
+          "commission_amount, commission_discount",
+      )
       .eq("is_voided", false),
     supabase
       .from("transactions")
@@ -47,6 +57,7 @@ export default async function DashboardPage() {
       )
       .eq("is_voided", false)
       .gt("commission_balance", 0),
+    supabase.from("expenses").select("expense_date, amount"),
   ]);
 
   const cityOptions = (cities ?? []).map((c) => ({ id: c.id, label: c.name }));
@@ -75,6 +86,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/Banner-Txt.png"
+        alt="GeoIhsan — Goods Transport Company"
+        className="block h-auto w-full rounded-lg object-cover"
+      />
+
       <div>
         <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
           Welcome, {profile.full_name ?? "there"}
@@ -83,6 +101,11 @@ export default async function DashboardPage() {
           Role: {profile.role}
         </p>
       </div>
+
+      <PeriodSummaryTabs
+        transactions={(transactions ?? []) as unknown as SummaryTransaction[]}
+        expenses={(expenses ?? []) as unknown as SummaryExpense[]}
+      />
 
       <TopFivePanel
         transactions={(transactions ?? []) as unknown as TopFiveTransaction[]}
@@ -97,18 +120,22 @@ export default async function DashboardPage() {
         truckOptions={allTruckOptions}
       />
 
-      <ClientWaitlistManager
-        initialRows={(clientWaitlist ?? []) as unknown as ClientWaitlistRow[]}
-        cityOptions={cityOptions}
-        clientOptions={clientOptions}
-      />
+      {/* Side by side once there's room — the trimmed columns fit two grids
+          across without scrolling. */}
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        <ClientWaitlistManager
+          initialRows={(clientWaitlist ?? []) as unknown as ClientWaitlistRow[]}
+          cityOptions={cityOptions}
+          clientOptions={clientOptions}
+        />
 
-      <TruckWaitlistManager
-        initialRows={(truckWaitlist ?? []) as unknown as TruckWaitlistRow[]}
-        cityOptions={cityOptions}
-        truckOptions={truckOptions}
-        driverOptions={driverOptions}
-      />
+        <TruckWaitlistManager
+          initialRows={(truckWaitlist ?? []) as unknown as TruckWaitlistRow[]}
+          cityOptions={cityOptions}
+          truckOptions={truckOptions}
+          driverOptions={driverOptions}
+        />
+      </div>
     </div>
   );
 }

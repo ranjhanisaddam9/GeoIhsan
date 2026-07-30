@@ -6,7 +6,15 @@ import { inputClass, primaryButtonClass, secondaryButtonClass } from "./_compone
 import { Combobox } from "./_components/Combobox";
 import { Modal } from "./_components/Modal";
 import { friendlyPostgresError } from "./_components/errors";
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from "./_components/icons";
+import {
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+  CheckIcon,
+  XMarkIcon,
+  ArrowLeftIcon,
+} from "./_components/icons";
 import {
   TRUCK_WAITLIST_COLUMNS,
   labelFor,
@@ -39,7 +47,9 @@ type FormValues = {
   comments: string;
 };
 
-type ModalState = { mode: "add" } | { mode: "edit"; row: TruckWaitlistRow };
+type ModalState =
+  | { mode: "add" }
+  | { mode: "edit" | "details"; row: TruckWaitlistRow };
 
 function emptyForm(): FormValues {
   return {
@@ -96,6 +106,12 @@ export function TruckWaitlistManager({
     setModal({ mode: "edit", row });
   }
 
+  function openDetails(row: TruckWaitlistRow) {
+    setForm(formFromRow(row));
+    setFormError(null);
+    setModal({ mode: "details", row });
+  }
+
   function closeModal() {
     setModal(null);
     setFormError(null);
@@ -103,7 +119,7 @@ export function TruckWaitlistManager({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!modal) return;
+    if (!modal || modal.mode === "details") return;
     setFormError(null);
 
     if (!form.from_city_id) return setFormError("From City is required.");
@@ -161,6 +177,9 @@ export function TruckWaitlistManager({
     setRows((prev) => prev.filter((r) => r.id !== row.id));
   }
 
+  const isDetails = modal?.mode === "details";
+  const disabledInputClass = `${inputClass} disabled:cursor-not-allowed disabled:opacity-60`;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -176,7 +195,13 @@ export function TruckWaitlistManager({
       <Modal
         open={modal !== null}
         onClose={closeModal}
-        title={modal?.mode === "edit" ? "Edit Waitlist Entry" : "New Waitlist Entry"}
+        title={
+          modal?.mode === "details"
+            ? "Waitlist Entry Details"
+            : modal?.mode === "edit"
+              ? "Edit Waitlist Entry"
+              : "New Waitlist Entry"
+        }
       >
         {modal && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -187,9 +212,10 @@ export function TruckWaitlistManager({
                 </label>
                 <input
                   type="date"
+                  disabled={isDetails}
                   value={form.entry_date}
                   onChange={(e) => setForm((f) => ({ ...f, entry_date: e.target.value }))}
-                  className={inputClass}
+                  className={disabledInputClass}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -198,9 +224,10 @@ export function TruckWaitlistManager({
                 </label>
                 <input
                   type="date"
+                  disabled={isDetails}
                   value={form.load_date}
                   onChange={(e) => setForm((f) => ({ ...f, load_date: e.target.value }))}
-                  className={inputClass}
+                  className={disabledInputClass}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -208,6 +235,7 @@ export function TruckWaitlistManager({
                   From City
                 </label>
                 <Combobox
+                  disabled={isDetails}
                   options={cityOptions}
                   value={form.from_city_id}
                   onChange={(id) => setForm((f) => ({ ...f, from_city_id: id }))}
@@ -219,69 +247,86 @@ export function TruckWaitlistManager({
                   To City
                 </label>
                 <Combobox
+                  disabled={isDetails}
                   options={cityOptions}
                   value={form.to_city_id}
                   onChange={(id) => setForm((f) => ({ ...f, to_city_id: id }))}
                   placeholder="Search city..."
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Truck#
-                </label>
-                <Combobox
-                  options={truckOptions}
-                  value={form.truck_id}
-                  onChange={(id) => setForm((f) => ({ ...f, truck_id: id }))}
-                  placeholder="Search truck..."
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Driver
-                </label>
-                <Combobox
-                  options={driverOptions}
-                  value={form.driver_id}
-                  onChange={(id) => setForm((f) => ({ ...f, driver_id: id }))}
-                  placeholder="Search driver..."
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Priority
-                </label>
-                <input
-                  inputMode="numeric"
-                  value={form.priority}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, priority: e.target.value.replace(/\D/g, "") }))
-                  }
-                  className={inputClass}
-                />
+              {/* Driver, Truck# and Priority share one line. */}
+              <div className="grid grid-cols-1 gap-3 sm:col-span-2 sm:grid-cols-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Driver
+                  </label>
+                  <Combobox
+                    disabled={isDetails}
+                    options={driverOptions}
+                    value={form.driver_id}
+                    onChange={(id) => setForm((f) => ({ ...f, driver_id: id }))}
+                    placeholder="Search driver..."
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Truck#
+                  </label>
+                  <Combobox
+                    disabled={isDetails}
+                    options={truckOptions}
+                    value={form.truck_id}
+                    onChange={(id) => setForm((f) => ({ ...f, truck_id: id }))}
+                    placeholder="Search truck..."
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Priority
+                  </label>
+                  <input
+                    inputMode="numeric"
+                    disabled={isDetails}
+                    value={form.priority}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, priority: e.target.value.replace(/\D/g, "") }))
+                    }
+                    className={disabledInputClass}
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Comments
                 </label>
                 <input
+                  disabled={isDetails}
                   value={form.comments}
                   onChange={(e) => setForm((f) => ({ ...f, comments: e.target.value }))}
-                  className={inputClass}
+                  className={disabledInputClass}
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button type="submit" disabled={formLoading} className={primaryButtonClass}>
-                <CheckIcon />
-                {formLoading ? "Saving..." : modal.mode === "edit" ? "Update" : "Save"}
-              </button>
-              <button type="button" onClick={closeModal} className={secondaryButtonClass}>
-                <XMarkIcon />
-                Cancel
-              </button>
-            </div>
+            {isDetails ? (
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={closeModal} className={secondaryButtonClass}>
+                  <ArrowLeftIcon />
+                  Back
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button type="submit" disabled={formLoading} className={primaryButtonClass}>
+                  <CheckIcon />
+                  {formLoading ? "Saving..." : modal.mode === "edit" ? "Update" : "Save"}
+                </button>
+                <button type="button" onClick={closeModal} className={secondaryButtonClass}>
+                  <XMarkIcon />
+                  Cancel
+                </button>
+              </div>
+            )}
             {formError && (
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
                 {formError}
@@ -297,19 +342,14 @@ export function TruckWaitlistManager({
             <tr>
               <th className="px-4 py-2 font-medium">Actions</th>
               <th className="px-4 py-2 font-medium">Date</th>
-              <th className="px-4 py-2 font-medium">From City</th>
-              <th className="px-4 py-2 font-medium">To City</th>
               <th className="px-4 py-2 font-medium">Truck#</th>
-              <th className="px-4 py-2 font-medium">Load Date</th>
               <th className="px-4 py-2 font-medium">Driver</th>
-              <th className="px-4 py-2 font-medium">Priority</th>
-              <th className="px-4 py-2 font-medium">Comments</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {rows.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={4} className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400">
                   No trucks waiting.
                 </td>
               </tr>
@@ -330,6 +370,15 @@ export function TruckWaitlistManager({
                     </button>
                     <button
                       type="button"
+                      onClick={() => openDetails(row)}
+                      aria-label="Details"
+                      title="Details"
+                      className={secondaryButtonClass}
+                    >
+                      <EyeIcon />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleRemove(row)}
                       aria-label="Remove"
                       title="Remove"
@@ -340,24 +389,11 @@ export function TruckWaitlistManager({
                   </div>
                 </td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">{row.entry_date}</td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {labelFor(cityOptions, row.from_city_id)}
-                </td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {labelFor(cityOptions, row.to_city_id)}
-                </td>
                 <td className="px-4 py-2 text-black dark:text-zinc-50">
                   {labelFor(truckOptions, row.truck_id)}
                 </td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">{row.load_date}</td>
                 <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
                   {labelFor(driverOptions, row.driver_id)}
-                </td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {row.priority ?? "—"}
-                </td>
-                <td className="px-4 py-2 text-zinc-700 dark:text-zinc-300">
-                  {row.comments ?? "—"}
                 </td>
               </tr>
             ))}

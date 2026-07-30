@@ -5,6 +5,7 @@ import { DashboardShell, type NavLink } from "./_components/DashboardShell";
 import {
   BriefcaseIcon,
   BuildingIcon,
+  ChartBarIcon,
   ClipboardListIcon,
   CogIcon,
   HomeIcon,
@@ -13,6 +14,7 @@ import {
   TruckIcon,
   UserIcon,
   UsersIcon,
+  WalletIcon,
 } from "./_components/icons";
 
 const NAV_LINKS: NavLink[] = [
@@ -24,6 +26,18 @@ const NAV_LINKS: NavLink[] = [
   { href: "/dashboard/cities", label: "Cities", icon: <BuildingIcon /> },
   { href: "/dashboard/locations", label: "Locations", icon: <MapPinIcon /> },
   { href: "/dashboard/brokers", label: "Brokers", icon: <BriefcaseIcon /> },
+  { href: "/dashboard/expenses", label: "Expenses", icon: <WalletIcon /> },
+  {
+    href: "/dashboard/reports",
+    label: "Reports",
+    icon: <ChartBarIcon />,
+    children: [
+      {
+        href: "/dashboard/reports/income-statement",
+        label: "Income Statement Report",
+      },
+    ],
+  },
 ];
 
 const ADMIN_ONLY_NAV_LINKS: NavLink[] = [

@@ -347,6 +347,57 @@ export function CogIcon({ className = base }: IconProps) {
   );
 }
 
+export function ChevronDownIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className={className}
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m5 7.5 5 5 5-5" />
+    </svg>
+  );
+}
+
+export function ChartBarIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 17h14M5.5 17V9M10 17V4M14.5 17v-5" />
+    </svg>
+  );
+}
+
+export function WalletIcon({ className = base }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.5 6.5A1.5 1.5 0 0 1 4 5h10a1.5 1.5 0 0 1 1.5 1.5V15a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 15V6.5Z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 6.5 11 3l2.5 2" />
+      <path strokeLinecap="round" d="M12.5 11h2.5" />
+    </svg>
+  );
+}
+
 export function PhoneIcon({ className = base }: IconProps) {
   return (
     <svg
