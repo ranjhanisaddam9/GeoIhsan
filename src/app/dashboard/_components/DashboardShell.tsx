@@ -94,27 +94,35 @@ export function DashboardShell({
           className="flex items-center justify-between border-b border-zinc-200 bg-white bg-repeat-y px-4 py-3 print:hidden dark:border-zinc-800 dark:bg-zinc-950 sm:px-6"
           style={{ backgroundImage: "url('/header.png')", backgroundSize: "100% auto" }}
         >
-          <button
-            type="button"
-            onClick={() => setSidebarOpen((v) => !v)}
-            aria-label="Toggle sidebar"
-            className="rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((v) => !v)}
+              aria-label="Toggle sidebar"
+              className="shrink-0 rounded-md p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
-              />
-            </svg>
-          </button>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
+                />
+              </svg>
+            </button>
+            <span className="hidden text-lg font-semibold tracking-wide text-white sm:inline md:hidden">
+              Geo Ihsan
+            </span>
+            <span className="hidden truncate text-2xl font-semibold tracking-wide text-white md:inline">
+              Geo Ihsan Goods Transport Company
+            </span>
+          </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/dashboard/transactions"

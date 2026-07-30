@@ -36,6 +36,8 @@ export type TransactionRow = {
   commission_amount: number;
   commission_paid: number;
   commission_balance: number;
+  commission_discount: number;
+  commission_received_by: string | null;
   is_voided: boolean;
   void_reason: string | null;
   created_by: string;
@@ -72,6 +74,8 @@ function valuesFromTransaction(t: TransactionRow): TransactionFormValues {
     advance_fare: String(t.advance_fare),
     commission_amount: String(t.commission_amount),
     commission_paid: String(t.commission_paid),
+    commission_discount: String(t.commission_discount),
+    commission_balance: String(t.commission_balance),
   };
 }
 

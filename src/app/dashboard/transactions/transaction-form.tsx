@@ -11,6 +11,13 @@ import { ArrowLeftIcon } from "../_components/icons";
 import { Combobox } from "../_components/Combobox";
 import { Modal } from "../_components/Modal";
 import { TRANSACTION_COLUMNS } from "./transaction-constants";
+import {
+  formatMoney,
+  normalizeNumeric,
+  toNumber,
+  withCommissionBalance,
+  withCommissionDerived,
+} from "./commission-calc";
 import { QuickAddTruck } from "./quick-add-truck";
 import { QuickAddDriver } from "./quick-add-driver";
 import { QuickAddClient } from "./quick-add-client";
@@ -42,6 +49,8 @@ export type TransactionFormValues = {
   advance_fare: string;
   commission_amount: string;
   commission_paid: string;
+  commission_discount: string;
+  commission_balance: string;
 };
 
 function todayIso() {
@@ -73,17 +82,9 @@ export function defaultTransactionFormValues(cities: SimpleOption[]): Transactio
     advance_fare: "",
     commission_amount: "0.00",
     commission_paid: "0.00",
+    commission_discount: "0.00",
+    commission_balance: "0.00",
   };
-}
-
-// Keeps only digits and at most one decimal point as the user types.
-function normalizeNumeric(raw: string) {
-  const cleaned = raw.replace(/[^0-9.]/g, "");
-  const firstDot = cleaned.indexOf(".");
-  if (firstDot === -1) return cleaned;
-  return (
-    cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, "")
-  );
 }
 
 // Keeps the form's current value selectable/visible even if it points at a
@@ -98,11 +99,6 @@ function withCurrentOption<T extends SimpleOption>(
   if (!currentId || active.some((o) => o.id === currentId)) return active;
   const current = all.find((o) => o.id === currentId);
   return current ? [current, ...active] : active;
-}
-
-function toNumber(value: string) {
-  const n = Number(value);
-  return Number.isNaN(n) ? 0 : n;
 }
 
 // If no active commission rate exists yet for this From City -> To City
@@ -126,9 +122,6 @@ async function ensureCommissionRate(fromCityId: string, toCityId: string, amount
     .insert({ from_city_id: fromCityId, to_city_id: toCityId, amount });
 }
 
-export function formatMoney(n: number) {
-  return n.toFixed(2);
-}
 
 function validate(form: TransactionFormValues): string | null {
   const required: [keyof TransactionFormValues, string][] = [
@@ -154,7 +147,8 @@ function validate(form: TransactionFormValues): string | null {
     ["extra_charges", "Misc"],
     ["advance_fare", "Advance Paid"],
     ["commission_amount", "Commission Amount"],
-    ["commission_paid", "Commission Paid"],
+    ["commission_paid", "Received"],
+    ["commission_discount", "Discount"],
   ];
   for (const [key, label] of numericFields) {
     const raw = form[key]?.trim();
@@ -221,11 +215,13 @@ export function TransactionForm({
       (r) => r.from_city_id === fromCityId && r.to_city_id === toCityId,
     );
 
-    setForm((f) => ({
-      ...f,
-      commission_amount: rate ? String(rate.amount) : "0.00",
-      commission_paid: rate ? String(rate.amount) : "0.00",
-    }));
+    setForm((f) =>
+      withCommissionDerived({
+        ...f,
+        commission_amount: rate ? String(rate.amount) : "0.00",
+        commission_paid: rate ? String(rate.amount) : "0.00",
+      }),
+    );
   }
 
   function closeQuickAdd() {
@@ -336,8 +332,8 @@ export function TransactionForm({
     toNumber(form.fare_charges) +
     toNumber(form.extra_charges);
   const fareBalance = totalAmount - toNumber(form.advance_fare);
-  const commissionBalance =
-    toNumber(form.commission_amount) - toNumber(form.commission_paid);
+  // Commission Discount and Balance Commission are real editable fields
+  // (auto-filled by withCommissionDerived), not computed at render time.
 
   async function saveTransaction(andPrint: boolean) {
     if (isDetails) return;
@@ -357,6 +353,9 @@ export function TransactionForm({
 
     setLoading(true);
     const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const payload = {
       transaction_date: form.transaction_date,
@@ -377,6 +376,10 @@ export function TransactionForm({
       advance_fare: toNumber(form.advance_fare),
       commission_amount: toNumber(form.commission_amount),
       commission_paid: toNumber(form.commission_paid),
+      commission_discount: toNumber(form.commission_discount),
+      commission_balance: toNumber(form.commission_balance),
+      // Whoever is signed in when the commission figures are recorded.
+      commission_received_by: user?.id ?? null,
     };
 
     const { data, error: saveError } =
@@ -743,7 +746,7 @@ export function TransactionForm({
 
         <hr className="border-zinc-200 dark:border-zinc-800" />
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Commission Amount
@@ -753,7 +756,12 @@ export function TransactionForm({
               disabled={isDetails}
               value={form.commission_amount}
               onChange={(e) =>
-                set("commission_amount", normalizeNumeric(e.target.value))
+                setForm((f) =>
+                  withCommissionDerived({
+                    ...f,
+                    commission_amount: normalizeNumeric(e.target.value),
+                  }),
+                )
               }
               className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
             />
@@ -761,7 +769,7 @@ export function TransactionForm({
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Commission Paid
+              Received
             </label>
             <input
               inputMode="decimal"
@@ -769,12 +777,19 @@ export function TransactionForm({
               value={form.commission_paid}
               onFocus={(e) => {
                 if (toNumber(form.commission_paid) === 0 && toNumber(form.commission_amount) !== 0) {
-                  set("commission_paid", form.commission_amount);
+                  setForm((f) =>
+                    withCommissionDerived({ ...f, commission_paid: f.commission_amount }),
+                  );
                   requestAnimationFrame(() => e.target.select());
                 }
               }}
               onChange={(e) =>
-                set("commission_paid", normalizeNumeric(e.target.value))
+                setForm((f) =>
+                  withCommissionDerived({
+                    ...f,
+                    commission_paid: normalizeNumeric(e.target.value),
+                  }),
+                )
               }
               className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
             />
@@ -782,12 +797,32 @@ export function TransactionForm({
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Balance Commission
+              Discount
+            </label>
+            <input
+              inputMode="decimal"
+              disabled={isDetails}
+              value={form.commission_discount}
+              onChange={(e) =>
+                setForm((f) =>
+                  withCommissionBalance({
+                    ...f,
+                    commission_discount: normalizeNumeric(e.target.value),
+                  }),
+                )
+              }
+              className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Balance
             </label>
             <div
               className={`${inputClass} bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300`}
             >
-              {formatMoney(commissionBalance)}
+              {formatMoney(toNumber(form.commission_balance))}
             </div>
           </div>
         </div>
