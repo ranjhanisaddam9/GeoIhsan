@@ -57,7 +57,7 @@ export default async function DashboardPage() {
       )
       .eq("is_voided", false)
       .gt("commission_balance", 0),
-    supabase.from("expenses").select("expense_date, amount"),
+    supabase.from("expenses").select("expense_date, category, amount"),
   ]);
 
   const cityOptions = (cities ?? []).map((c) => ({ id: c.id, label: c.name }));
