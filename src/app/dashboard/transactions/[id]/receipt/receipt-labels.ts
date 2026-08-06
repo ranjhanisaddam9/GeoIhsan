@@ -35,8 +35,7 @@ type ReceiptLabels = {
   note: string;
   noteWeight: string;
   noteTarping: string;
-  emergencyContact: string;
-  disclaimer: string;
+  contact: string;
   printedBy: string;
 };
 
@@ -68,8 +67,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
       "In case of a weight discrepancy upon vehicle weighment, an allowance of up to 70 kg will be permitted.",
     noteTarping:
       "Tarping the cargo is part of the driver's job. If there is any damage, both the truck owner and driver will be liable.",
-    emergencyContact: "Emergency Contact:",
-    disclaimer: "This is computer generated receipt does not require any signature",
+    contact: "Contact:",
     printedBy: "printed by:",
   },
   urdu: {
@@ -99,8 +97,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
       "گاڑی کی تلائی میں وزن کے فرق کی صورت میں 70 کلوگرام تک کی رعایت دی جائے گی۔",
     noteTarping:
       "سامان کو ترپال سے ڈھانپنا ڈرائیور کی ذمہ داری ہے۔ کسی بھی نقصان کی صورت میں ٹرک مالک اور ڈرائیور دونوں ذمہ دار ہوں گے۔",
-    emergencyContact: "ہنگامی رابطہ:",
-    disclaimer: "یہ کمپیوٹر سے تیار کردہ رسید ہے، دستخط کی ضرورت نہیں۔",
+    contact: "رابطہ:",
     printedBy: "پرنٹ کردہ:",
   },
   sindhi: {
@@ -130,8 +127,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
       "گاڏي جي توري ۾ وزن جي فرق جي صورت ۾ 70 ڪلوگرام تائين رعايت ڏني ويندي.",
     noteTarping:
       "سامان تي ترپال وجهڻ ڊرائيور جي ذميواري آهي. ڪنهن به نقصان جي صورت ۾ ٽرڪ مالڪ ۽ ڊرائيور ٻئي ذميوار هوندا.",
-    emergencyContact: "هنگامي رابطو:",
-    disclaimer: "هي ڪمپيوٽر ٺاهيل رسيد آهي، صحيح جي ضرورت ناهي.",
+    contact: "رابطو:",
     printedBy: "پرنٽ ڪيل:",
   },
 };

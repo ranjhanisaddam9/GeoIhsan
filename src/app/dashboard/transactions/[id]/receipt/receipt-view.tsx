@@ -138,14 +138,15 @@ function ReceiptCard({
   return (
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className="w-full max-w-2xl overflow-hidden rounded-lg border-2 border-zinc-900 bg-white p-6 pb-3 text-black print:max-w-none print:min-w-0 print:flex-1 print:basis-0 print:rounded-none print:border print:p-[5px] print:pb-[5px]"
+        className="w-full max-w-2xl overflow-hidden rounded-lg border-0 bg-white p-6 pb-3 text-black print:max-w-none print:min-w-0 print:mr-[2px] print:w-auto print:rounded-none print:border-0 print:p-[10px] print:pb-[10px]"
       >
-        <div className="-mx-6 -mt-6 border-b-2 border-zinc-900 print:-mx-[5px] print:-mt-[5px]">
+        {/* Printed on pre-printed letterhead: the banner is hidden but keeps its space. */}
+        <div className="-mx-6 -mt-6 border-b-2 border-zinc-900 print:-mx-[10px] print:-mt-[10px] print:border-b-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/Banner-Txt.png"
             alt="GeoIhsan"
-            className="block h-auto w-full object-cover"
+            className="block h-auto w-full object-cover print:invisible"
           />
         </div>
 
@@ -259,32 +260,33 @@ function ReceiptCard({
           <ol className="list-decimal space-y-0.5 ps-4">
             <li>{labels.noteWeight}</li>
             <li>{labels.noteTarping}</li>
-            <li className="font-bold">{labels.emergencyContact}</li>
           </ol>
-          <p className="ps-4">
-            M. Azeem (
-            <WhatsAppNumbers
-              numbers={[
-                { value: "03003038810" },
-                { value: "03113935380" },
-                { value: "03013459152", icon: "phone" },
-              ]}
-            />
-            )
-          </p>
-          <p className="ps-4">
-            A. Nawaz (
-            <WhatsAppNumbers
-              numbers={[{ value: "03443115466" }, { value: "03073356638", icon: "phone" }]}
-            />
-            )
-          </p>
         </div>
 
         <hr className="mt-0 mb-1 border-zinc-400" />
 
-        <div className="mt-0 flex items-center justify-between text-xs text-zinc-600">
-          <span>{labels.disclaimer}</span>
+        <div className="mt-0 flex items-start justify-between text-xs text-zinc-600">
+          <div>
+            <p>{labels.contact}</p>
+            <p>
+              M. Azeem (
+              <WhatsAppNumbers
+                numbers={[
+                  { value: "03003038810" },
+                  { value: "03113935380" },
+                  { value: "03013459152", icon: "phone" },
+                ]}
+              />
+              )
+            </p>
+            <p>
+              A. Nawaz (
+              <WhatsAppNumbers
+                numbers={[{ value: "03443115466" }, { value: "03073356638", icon: "phone" }]}
+              />
+              )
+            </p>
+          </div>
           <span>
             {labels.printedBy} {printedByUsername}
           </span>
@@ -296,7 +298,7 @@ function ReceiptCard({
 export function ReceiptView(props: ReceiptCardProps) {
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-8 print:max-w-none print:w-full print:px-0 print:py-0">
-      <style>{"@media print { @page { size: A4 landscape; margin: 10mm; } }"}</style>
+      <style>{"@media print { @page { margin: 0; } }"}</style>
 
       <div className="mb-6 flex items-center justify-between print:hidden">
         <Link href="/dashboard/transactions" className={secondaryButtonClass}>
@@ -313,9 +315,7 @@ export function ReceiptView(props: ReceiptCardProps) {
         </button>
       </div>
 
-      <div className="flex flex-col items-center gap-10 print:flex-row print:items-stretch print:justify-center print:gap-[6mm]">
-        <ReceiptCard {...props} />
-        <div className="hidden print:block print:border-l print:border-dashed print:border-zinc-400" />
+      <div className="flex flex-col items-center print:block">
         <ReceiptCard {...props} />
       </div>
     </div>
