@@ -15,16 +15,18 @@ export type UserProfile = {
 export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Same verification the proxy does, and for the same reason it uses
+  // getClaims() rather than getUser(): the signature is checked locally
+  // against the project's public key, so this costs no network round trip.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims.sub;
 
-  if (!user) return null;
+  if (!userId) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, full_name, role, is_active")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   return profile;

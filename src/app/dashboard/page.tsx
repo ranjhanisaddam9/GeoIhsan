@@ -88,7 +88,7 @@ export default async function DashboardPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/Banner-Txt.png"
+        src="/Banner-Txt.webp"
         alt="GeoIhsan — Goods Transport Company"
         className="block h-auto w-full rounded-lg object-cover"
       />

@@ -73,12 +73,12 @@ export function DashboardShell({
       >
         <div
           className="pointer-events-none absolute inset-0 bg-cover bg-top bg-no-repeat opacity-50"
-          style={{ backgroundImage: "url('/sidepanel.png')" }}
+          style={{ backgroundImage: "url('/sidepanel.webp')" }}
         />
         <div className="relative flex items-center justify-center border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/log0.png"
+            src="/log0.webp"
             alt="GeoIhsan"
             className="w-auto"
             style={{ height: "clamp(2.5rem, -0.5rem + 11.5vw, 10rem)" }}
@@ -150,7 +150,7 @@ export function DashboardShell({
       <div className="flex min-h-screen flex-1 flex-col">
         <header
           className="flex items-center justify-between border-b border-zinc-200 bg-white bg-repeat-y px-4 py-3 print:hidden dark:border-zinc-800 dark:bg-zinc-950 sm:px-6"
-          style={{ backgroundImage: "url('/header.png')", backgroundSize: "100% auto" }}
+          style={{ backgroundImage: "url('/header.webp')", backgroundSize: "100% auto" }}
         >
           <div className="flex min-w-0 items-center gap-3">
             <button

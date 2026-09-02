@@ -53,11 +53,11 @@ export default function LoginPage() {
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center bg-zinc-50 bg-cover bg-center px-6 dark:bg-black"
-      style={{ backgroundImage: "url('/login-bg.png')" }}
+      style={{ backgroundImage: "url('/login-bg.webp')" }}
     >
       <div className="w-full max-w-sm rounded-lg border border-white/30 bg-white/20 p-8 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/20">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/log0.png" alt="GeoIhsan" className="mx-auto h-48 w-auto" />
+        <img src="/log0.webp" alt="GeoIhsan" className="mx-auto h-48 w-auto" />
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4" noValidate>
           <div className="flex flex-col gap-1.5">

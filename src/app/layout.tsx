@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Trucking station management system for managing trucks, drivers, clients, and transport transactions",
   icons: {
-    icon: "/ico1.png",
+    icon: "/favicon-64.png",
   },
 };
 
