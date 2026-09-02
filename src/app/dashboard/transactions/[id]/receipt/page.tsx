@@ -85,19 +85,6 @@ export default async function ReceiptPage({
     destinationCityName = destCity?.name ?? null;
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  let printedByUsername = "—";
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .single();
-    printedByUsername = profile?.username ?? "—";
-  }
-
   const { data: languageSetting } = await supabase
     .from("app_settings")
     .select("value")
@@ -108,7 +95,6 @@ export default async function ReceiptPage({
   return (
     <ReceiptView
       transaction={transaction}
-      printedByUsername={printedByUsername}
       language={language}
       fromCityName={fromCity?.name ?? "—"}
       toCityName={toCity?.name ?? "—"}

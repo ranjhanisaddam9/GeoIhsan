@@ -32,11 +32,7 @@ type ReceiptLabels = {
   totalAmount: string;
   advanceReceived: string;
   balance: string;
-  note: string;
-  noteWeight: string;
-  noteTarping: string;
   contact: string;
-  printedBy: string;
 };
 
 const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
@@ -50,25 +46,19 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     receiver: "Receiver",
     truckNumber: "Truck Number",
     driver: "Driver",
-    coBroker: "C/o Broker",
+    coBroker: "C/o",
     item: "Item",
     qty: "Qty",
     weightKg: "Weight (KG)",
-    charges: "Charges",
+    charges: "Amount",
     fare: "Fare",
     labour: "Labour",
     weighing: "Weighing",
     misc: "Misc",
     totalAmount: "Total Amount",
-    advanceReceived: "Advance Received",
+    advanceReceived: "Amount Received",
     balance: "Balance",
-    note: "Note:",
-    noteWeight:
-      "In case of a weight discrepancy upon vehicle weighment, an allowance of up to 70 kg will be permitted.",
-    noteTarping:
-      "Tarping the cargo is part of the driver's job. If there is any damage, both the truck owner and driver will be liable.",
     contact: "Contact:",
-    printedBy: "printed by:",
   },
   urdu: {
     companyTagline: "مال بردار کمپنی",
@@ -92,13 +82,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     totalAmount: "کل رقم",
     advanceReceived: "وصول شدہ ایڈوانس",
     balance: "بقایا رقم",
-    note: "نوٹ:",
-    noteWeight:
-      "گاڑی کی تلائی میں وزن کے فرق کی صورت میں 70 کلوگرام تک کی رعایت دی جائے گی۔",
-    noteTarping:
-      "سامان کو ترپال سے ڈھانپنا ڈرائیور کی ذمہ داری ہے۔ کسی بھی نقصان کی صورت میں ٹرک مالک اور ڈرائیور دونوں ذمہ دار ہوں گے۔",
     contact: "رابطہ:",
-    printedBy: "پرنٹ کردہ:",
   },
   sindhi: {
     companyTagline: "مال بردار ڪمپني",
@@ -122,13 +106,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     totalAmount: "ڪل رقم",
     advanceReceived: "مليل ائڊوانس",
     balance: "بچت رقم",
-    note: "نوٽ:",
-    noteWeight:
-      "گاڏي جي توري ۾ وزن جي فرق جي صورت ۾ 70 ڪلوگرام تائين رعايت ڏني ويندي.",
-    noteTarping:
-      "سامان تي ترپال وجهڻ ڊرائيور جي ذميواري آهي. ڪنهن به نقصان جي صورت ۾ ٽرڪ مالڪ ۽ ڊرائيور ٻئي ذميوار هوندا.",
     contact: "رابطو:",
-    printedBy: "پرنٽ ڪيل:",
   },
 };
 
