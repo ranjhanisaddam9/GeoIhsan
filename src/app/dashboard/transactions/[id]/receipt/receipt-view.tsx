@@ -318,7 +318,7 @@ function ReceiptCard({
         />
 
         <div className="mt-[4pt] text-[7.2pt] text-zinc-600">
-          <p>Address: Geo Ihsan Goods Transport, Sehwan Road Dadu</p>
+          <p className="text-center">Address: Geo Ihsan Goods Transport, Sehwan Road Dadu</p>
           <p className="mt-[3pt]">
             {labels.contact} M. Azeem (
             <WhatsAppNumbers
