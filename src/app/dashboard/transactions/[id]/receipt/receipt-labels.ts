@@ -32,7 +32,6 @@ type ReceiptLabels = {
   totalAmount: string;
   advanceReceived: string;
   balance: string;
-  contact: string;
 };
 
 const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
@@ -57,9 +56,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     misc: "Misc",
     totalAmount: "Total Amount",
     advanceReceived: "Amount Received",
-    balance: "Balance",
-    contact: "Contact:",
-  },
+    balance: "Balance",  },
   urdu: {
     companyTagline: "مال بردار کمپنی",
     voided: "منسوخ شدہ",
@@ -81,9 +78,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     misc: "متفرق",
     totalAmount: "کل رقم",
     advanceReceived: "وصول شدہ ایڈوانس",
-    balance: "بقایا رقم",
-    contact: "رابطہ:",
-  },
+    balance: "بقایا رقم",  },
   sindhi: {
     companyTagline: "مال بردار ڪمپني",
     voided: "رد ٿيل",
@@ -105,9 +100,7 @@ const RECEIPT_LABELS: Record<ReceiptLanguage, ReceiptLabels> = {
     misc: "ٻيا خرچ",
     totalAmount: "ڪل رقم",
     advanceReceived: "مليل ائڊوانس",
-    balance: "بچت رقم",
-    contact: "رابطو:",
-  },
+    balance: "بچت رقم",  },
 };
 
 export function getReceiptLabels(language: ReceiptLanguage): ReceiptLabels {

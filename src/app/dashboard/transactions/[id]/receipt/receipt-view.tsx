@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { Noto_Naskh_Arabic } from "next/font/google";
 import {
   primaryButtonClass,
   secondaryButtonClass,
 } from "../../../_components/ui";
 import { ArrowLeftIcon, PhoneIcon, PrinterIcon, WhatsAppIcon } from "../../../_components/icons";
 import { getReceiptLabels, type ReceiptLanguage } from "./receipt-labels";
+
+// Geist has no Arabic-script glyphs, so without this the Urdu note falls back
+// to whatever system font the printing PC has. Naskh holds up at small print
+// sizes, where Nastaliq's stacked letterforms blur.
+const notoNaskh = Noto_Naskh_Arabic({ subsets: ["arabic"], weight: ["400", "700"] });
 
 type ReceiptTransaction = {
   transaction_number: string;
@@ -24,8 +30,10 @@ type ReceiptTransaction = {
   is_voided: boolean;
 };
 
+// Thousands separators so 124,000.00 can't be misread as 12,400.00 at print
+// size. Locale pinned so server and client render the same string.
 function formatMoney(n: number) {
-  return n.toFixed(2);
+  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function phoneJoin(name: string, phone: string | null) {
@@ -40,9 +48,9 @@ function WhatsAppNumbers({ numbers }: { numbers: ContactNumber[] }) {
       {numbers.map(({ value, icon = "whatsapp" }, index) => (
         <span key={value} className="whitespace-nowrap">
           {icon === "whatsapp" ? (
-            <WhatsAppIcon className="inline h-2.5 w-2.5 align-[-1px] text-green-600" />
+            <WhatsAppIcon className="inline h-[8pt] w-[8pt] align-[-1px] text-green-600" />
           ) : (
-            <PhoneIcon className="inline h-2.5 w-2.5 align-[-1px] text-zinc-600" />
+            <PhoneIcon className="inline h-[8pt] w-[8pt] align-[-1px] text-zinc-700" />
           )}{" "}
           {value}
           {index < numbers.length - 1 ? ", " : ""}
@@ -69,7 +77,7 @@ function Field({
 }) {
   return (
     <div className={wide ? "col-span-2" : ""}>
-      <span className="font-medium text-zinc-600">{label}: </span>
+      <span className="font-medium text-zinc-700">{label}: </span>
       <span>{value}</span>
     </div>
   );
@@ -87,9 +95,9 @@ function ChargeRow({
   rightAlignLabel?: boolean;
 }) {
   return (
-    <tr className={bold ? "font-semibold" : ""}>
+    <tr className={bold ? "text-[10.5pt] font-bold" : ""}>
       <td className={`py-1 ${rightAlignLabel ? "text-end" : ""}`}>{label}</td>
-      <td className="py-1 text-end">{formatMoney(value)}</td>
+      <td className="py-1 text-end tabular-nums">{formatMoney(value)}</td>
     </tr>
   );
 }
@@ -136,7 +144,7 @@ function ReceiptCard({
   return (
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className="flex min-h-[207mm] w-full max-w-[148mm] flex-col overflow-hidden rounded-lg border-0 bg-white p-[7.5pt] text-[8.4pt] text-black print:max-w-none print:min-w-0 print:w-auto print:rounded-none print:border-0"
+        className="flex min-h-[207mm] w-full max-w-[148mm] flex-col overflow-hidden rounded-lg border-0 bg-white p-[7.5pt] text-[9.5pt] text-black print:max-w-none print:min-w-0 print:w-auto print:rounded-none print:border-0"
       >
         {/* Bled to the page edges — the A5 page has no margin of its own.
             The 3.08 aspect puts it at ~48mm tall across A5's 148mm. */}
@@ -181,14 +189,17 @@ function ReceiptCard({
           <hr className="mt-4 border-zinc-400" />
 
           <table className="w-full table-fixed">
+            {/* Amount gets 40%: at 9.5-10.5pt with thousands separators, a
+                figure like 1,240,000.00 needs ~23mm, which a 30% column split
+                in two could not hold. */}
             <colgroup>
-              <col className="w-[40%]" />
+              <col className="w-[30%]" />
               <col className="w-[10%]" />
               <col className="w-[20%]" />
-              <col className="w-[30%]" />
+              <col className="w-[40%]" />
             </colgroup>
             <thead>
-              <tr className="border-b border-zinc-400 text-center font-bold text-zinc-600">
+              <tr className="border-b border-zinc-400 text-center font-bold text-zinc-700">
                 <th className="pt-0 pb-1">{labels.item}</th>
                 <th className="pt-0 pb-1">{labels.qty}</th>
                 <th className="pt-0 pb-1">{labels.weightKg}</th>
@@ -206,8 +217,8 @@ function ReceiptCard({
                 </td>
                 <td className="py-1 align-top">
                   {!transaction.is_voided && (
-                    // Fixed 50/50 split of the 30% Amount column: labels end at
-                    // 85% of the content width, values at 100%. The totals block
+                    // Fixed 50/50 split of the 40% Amount column: labels end at
+                    // 80% of the content width, values at 100%. The totals block
                     // below repeats those two edges so the two align.
                     <table className="w-full table-fixed">
                       <colgroup>
@@ -247,21 +258,21 @@ function ReceiptCard({
               free space collects above this line and everything from here down
               — broker, totals, note, footer — sits at the foot of the page. */}
           <div className="mt-auto pt-1">
-            <span className="text-zinc-600">{labels.coBroker}: </span>
+            <span className="text-zinc-700">{labels.coBroker}: </span>
             {phoneJoin(brokerName, brokerPhone)}
           </div>
 
           {!transaction.is_voided && (
             <>
               <hr className="mt-1 border-zinc-400" />
-              {/* 45% wide, so its value column lands on the same 85%-100% span
+              {/* 50% wide, so its value column lands on the same 80%-100% span
                   as the charges above and its labels end on the same edge. The
                   label column is wider than the charges' because "Amount
                   Received" needs the room; it just starts further left. */}
-              <table className="ms-auto w-[45%] table-fixed">
+              <table className="ms-auto w-1/2 table-fixed">
                 <colgroup>
-                  <col className="w-[66.667%]" />
-                  <col className="w-[33.333%]" />
+                  <col className="w-[60%]" />
+                  <col className="w-[40%]" />
                 </colgroup>
                 <tbody>
                   <ChargeRow
@@ -289,8 +300,13 @@ function ReceiptCard({
 
         {/* Always Urdu and always RTL, whatever language the rest of the
             receipt is in. The items carry their own Urdu numerals, so this
-            is a plain list rather than an <ol> that would number it twice. */}
-        <div dir="rtl" className="mt-[6pt] space-y-[1.5pt] text-right text-[7.2pt] text-zinc-700">
+            is a plain list rather than an <ol> that would number it twice.
+            9pt and solid black: Urdu's dots are what tell letters apart, and
+            they drop out at fine-print sizes or in printer-dithered grey. */}
+        <div
+          dir="rtl"
+          className={`mt-[6pt] space-y-[2pt] text-right text-[9pt] leading-[1.7] text-black ${notoNaskh.className}`}
+        >
           <p className="font-bold">نوٹ:</p>
           <p className="pe-[4pt]">
             ۱۔ وزن میں فرق کی صورت میں، صرف 30 ٹن لوڈ کے لیے زیادہ سے زیادہ 70
@@ -317,23 +333,53 @@ function ReceiptCard({
           }}
         />
 
-        <div className="mt-[4pt] text-[7.2pt] text-zinc-600">
-          <p className="text-center">Address: Geo Ihsan Goods Transport, Sehwan Road Dadu</p>
-          <p className="mt-[3pt]">
-            {labels.contact} M. Azeem (
-            <WhatsAppNumbers
-              numbers={[
-                { value: "03003038810" },
-                { value: "03113935380" },
-                { value: "03013459152", icon: "phone" },
-              ]}
-            />
-            ) | A. Nawaz (
-            <WhatsAppNumbers
-              numbers={[{ value: "03443115466" }, { value: "03073356638", icon: "phone" }]}
-            />
-            )
-          </p>
+        <div className="mt-[2pt] text-[8pt] text-zinc-900">
+          {/* Pinned LTR so Address stays left and Proprietor right even on an
+              Urdu or Sindhi receipt, where the card itself runs RTL. */}
+          <div dir="ltr" className="flex items-baseline justify-between gap-4">
+            <span>Address: Geo Ihsan Goods Transport, Bypass Sehwan Road Dadu</span>
+            {/* Banner teal (#224c4e) behind white text; print-color-adjust
+                stops the browser dropping the background when printing. The
+                clip-path pulls the bottom-left corner 6pt inward so the left
+                edge slants like a backslash; the extra left padding keeps the
+                text clear of that slant. The negative right margin bleeds the
+                colour past the card's 7.5pt padding to the page edge, and the
+                right padding grows by the same 7.5pt so the text doesn't move. */}
+            <span
+              className="-mr-[7.5pt] shrink-0 py-[1.5pt] pr-[14.5pt] pl-[12pt] text-[9.5pt] font-semibold tracking-[0.01em] whitespace-nowrap text-white"
+              style={{
+                backgroundColor: "#224c4e",
+                clipPath: "polygon(0 0, 100% 0, 100% 100%, 6pt 100%)",
+                printColorAdjust: "exact",
+                WebkitPrintColorAdjust: "exact",
+              }}
+            >
+              Proprietor: Ihsan Ali Ranjhani
+            </span>
+          </div>
+          {/* One person per line: at 8pt the five numbers no longer fit on a
+              single line, and wrapping mid-list would split a name from its
+              numbers. */}
+          <div className="mt-[3pt] space-y-[1.5pt] text-center">
+            <p>
+              M. Azeem (
+              <WhatsAppNumbers
+                numbers={[
+                  { value: "03003038810" },
+                  { value: "03113935380" },
+                  { value: "03013459152", icon: "phone" },
+                ]}
+              />
+              )
+            </p>
+            <p>
+              A. Nawaz (
+              <WhatsAppNumbers
+                numbers={[{ value: "03443115466" }, { value: "03073356638", icon: "phone" }]}
+              />
+              )
+            </p>
+          </div>
         </div>
       </div>
   );
