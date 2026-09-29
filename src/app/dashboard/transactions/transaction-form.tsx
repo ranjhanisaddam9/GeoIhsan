@@ -197,6 +197,13 @@ export function TransactionForm({
   >(null);
 
   const isDetails = mode === "details";
+  const isEdit = mode === "edit";
+
+  // Edit-only Balance Adjustment: an amount collected against the
+  // outstanding fare balance, folded into Advance Paid (Amount Received) on
+  // save. Null means "untouched" — it then tracks the current Balance
+  // Amount so saving settles the balance in full by default.
+  const [balanceAdjustment, setBalanceAdjustment] = useState<string | null>(null);
 
   function set<K extends keyof TransactionFormValues>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -332,6 +339,8 @@ export function TransactionForm({
     toNumber(form.fare_charges) +
     toNumber(form.extra_charges);
   const fareBalance = totalAmount - toNumber(form.advance_fare);
+  const balanceAdjustmentValue =
+    balanceAdjustment ?? formatMoney(Math.max(fareBalance, 0));
   // Commission Discount and Balance Commission are real editable fields
   // (auto-filled by withCommissionDerived), not computed at render time.
 
@@ -373,7 +382,9 @@ export function TransactionForm({
       loading_labour_charges: toNumber(form.loading_labour_charges),
       fare_charges: toNumber(form.fare_charges),
       extra_charges: toNumber(form.extra_charges),
-      advance_fare: toNumber(form.advance_fare),
+      advance_fare:
+        toNumber(form.advance_fare) +
+        (isEdit ? toNumber(balanceAdjustmentValue) : 0),
       commission_amount: toNumber(form.commission_amount),
       commission_paid: toNumber(form.commission_paid),
       commission_discount: toNumber(form.commission_discount),
@@ -416,6 +427,18 @@ export function TransactionForm({
     }
 
     const savedId = (data as unknown as { id: string }).id;
+
+    if (isEdit) {
+      // The adjustment is now part of Advance Paid, so the balance it
+      // settled and the adjustment itself both read 0 from here on.
+      setForm((f) => ({
+        ...f,
+        advance_fare: formatMoney(
+          toNumber(f.advance_fare) + toNumber(balanceAdjustmentValue),
+        ),
+      }));
+      setBalanceAdjustment(null);
+    }
 
     if (printWindow) {
       printWindow.location.href = `/dashboard/transactions/${savedId}/receipt`;
@@ -707,7 +730,7 @@ export function TransactionForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className={`grid grid-cols-1 gap-4 ${isEdit ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Total Amount
@@ -742,6 +765,22 @@ export function TransactionForm({
               {formatMoney(fareBalance)}
             </div>
           </div>
+
+          {isEdit && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Balance Adjustment
+              </label>
+              <input
+                inputMode="decimal"
+                value={balanceAdjustmentValue}
+                onChange={(e) =>
+                  setBalanceAdjustment(normalizeNumeric(e.target.value))
+                }
+                className={inputClass}
+              />
+            </div>
+          )}
         </div>
 
         <hr className="border-zinc-200 dark:border-zinc-800" />
