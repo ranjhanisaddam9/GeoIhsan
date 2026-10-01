@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { Modal } from "./_components/Modal";
+import { inputClass } from "./_components/ui";
 import { rangeForPreset, type DatePresetKey } from "./_components/date-presets";
 import { isWithinDateRange } from "./_components/date-utils";
+import { TopFivePanel, type TopFiveTransaction } from "./top-five-panel";
+import type { Option } from "./waitlist-shared";
 
 // Same figures the Income Statement report shows, summarised per period.
 export type SummaryTransaction = {
@@ -25,6 +28,7 @@ const TABS: { key: DatePresetKey; label: string }[] = [
   { key: "last_month", label: "Last Month" },
   { key: "year", label: "This Year" },
   { key: "last_year", label: "Last Year" },
+  { key: "custom", label: "Custom Date" },
 ];
 
 function formatMoney(n: number) {
@@ -76,19 +80,40 @@ function Card({
   );
 }
 
+// The dashboard's one period filter: it drives these summary cards and the
+// Top 5 rankings rendered beneath them.
 export function PeriodSummaryTabs({
   transactions,
   expenses,
+  topFiveTransactions,
+  truckOptions,
+  driverOptions,
+  clientOptions,
 }: {
   transactions: SummaryTransaction[];
   expenses: SummaryExpense[];
+  topFiveTransactions: TopFiveTransaction[];
+  truckOptions: Option[];
+  driverOptions: Option[];
+  clientOptions: Option[];
 }) {
+  const initial = rangeForPreset("month");
   const [tab, setTab] = useState<DatePresetKey>("month");
+  const [from, setFrom] = useState(initial?.from ?? "");
+  const [to, setTo] = useState(initial?.to ?? "");
   const [expensesOpen, setExpensesOpen] = useState(false);
 
-  const range = rangeForPreset(tab);
-  const from = range?.from ?? "";
-  const to = range?.to ?? "";
+  // "custom" keeps the current range and just unlocks the date inputs.
+  function selectTab(key: DatePresetKey) {
+    setTab(key);
+    const range = rangeForPreset(key);
+    if (range) {
+      setFrom(range.from);
+      setTo(range.to);
+    }
+  }
+
+  const customEnabled = tab === "custom";
 
   const sum = (nums: number[]) => nums.reduce((total, n) => total + n, 0);
 
@@ -115,25 +140,49 @@ export function PeriodSummaryTabs({
     .map(([category, total]) => ({ category, total }))
     .sort((a, b) => b.total - a.total);
 
-  const tabLabel = TABS.find((t) => t.key === tab)?.label ?? "";
+  const tabLabel = customEnabled
+    ? `${from || "…"} to ${to || "…"}`
+    : (TABS.find((t) => t.key === tab)?.label ?? "");
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-800">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={
-              tab === t.key
-                ? "-mb-px border-b-2 border-green-600 px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-400"
-                : "-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:text-black dark:text-zinc-400 dark:hover:text-zinc-50"
-            }
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => selectTab(t.key)}
+              className={
+                tab === t.key
+                  ? "-mb-px border-b-2 border-green-600 px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-400"
+                  : "-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-zinc-600 transition-colors hover:text-black dark:text-zinc-400 dark:hover:text-zinc-50"
+              }
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 pb-2">
+          <input
+            type="date"
+            aria-label="From date"
+            value={from}
+            disabled={!customEnabled}
+            onChange={(e) => setFrom(e.target.value)}
+            className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
+          />
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">to</span>
+          <input
+            type="date"
+            aria-label="To date"
+            value={to}
+            disabled={!customEnabled}
+            onChange={(e) => setTo(e.target.value)}
+            className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -143,7 +192,11 @@ export function PeriodSummaryTabs({
           value={netExpenses}
           onClick={() => setExpensesOpen(true)}
         />
-        <Card label="Net Profit" value={netIncome - netExpenses} tone="profit" />
+        <Card
+          label="Net Profit"
+          value={netIncome - netExpenses}
+          tone="profit"
+        />
       </div>
 
       <Modal
@@ -195,6 +248,17 @@ export function PeriodSummaryTabs({
           </table>
         </div>
       </Modal>
+
+      <div className="mt-6">
+        <TopFivePanel
+          transactions={topFiveTransactions}
+          dateFrom={from}
+          dateTo={to}
+          truckOptions={truckOptions}
+          driverOptions={driverOptions}
+          clientOptions={clientOptions}
+        />
+      </div>
     </div>
   );
 }
