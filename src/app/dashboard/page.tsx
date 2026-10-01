@@ -2,11 +2,12 @@ import { getUserProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ClientWaitlistManager, type ClientWaitlistRow } from "./client-waitlist-manager";
 import { TruckWaitlistManager, type TruckWaitlistRow } from "./truck-waitlist-manager";
-import { TopFivePanel, type TopFiveTransaction } from "./top-five-panel";
+import type { TopFiveTransaction } from "./top-five-panel";
 import {
   PendingCommissionList,
   type PendingCommissionRow,
 } from "./pending-commission-list";
+import { PendingTransactionList, type PendingTransactionRow } from "./pending-transaction-list";
 import {
   PeriodSummaryTabs,
   type SummaryExpense,
@@ -32,6 +33,7 @@ export default async function DashboardPage() {
     { data: drivers },
     { data: transactions },
     { data: pendingCommission },
+    { data: pendingTransaction },
     { data: expenses },
   ] = await Promise.all([
     supabase.from("client_waitlist").select(CLIENT_WAITLIST_COLUMNS),
@@ -57,6 +59,14 @@ export default async function DashboardPage() {
       )
       .eq("is_voided", false)
       .gt("commission_balance", 0),
+    supabase
+      .from("transactions")
+      .select(
+        "id, transaction_number, transaction_date, driver_id, truck_id, " +
+          "total_fare_charges, advance_fare, remaining_fare",
+      )
+      .eq("is_voided", false)
+      .gt("remaining_fare", 0),
     supabase.from("expenses").select("expense_date, category, amount"),
   ]);
 
@@ -105,10 +115,7 @@ export default async function DashboardPage() {
       <PeriodSummaryTabs
         transactions={(transactions ?? []) as unknown as SummaryTransaction[]}
         expenses={(expenses ?? []) as unknown as SummaryExpense[]}
-      />
-
-      <TopFivePanel
-        transactions={(transactions ?? []) as unknown as TopFiveTransaction[]}
+        topFiveTransactions={(transactions ?? []) as unknown as TopFiveTransaction[]}
         truckOptions={allTruckOptions}
         driverOptions={allDriverOptions}
         clientOptions={allClientOptions}
@@ -116,6 +123,12 @@ export default async function DashboardPage() {
 
       <PendingCommissionList
         initialRows={(pendingCommission ?? []) as unknown as PendingCommissionRow[]}
+        driverOptions={allDriverOptions}
+        truckOptions={allTruckOptions}
+      />
+
+      <PendingTransactionList
+        initialRows={(pendingTransaction ?? []) as unknown as PendingTransactionRow[]}
         driverOptions={allDriverOptions}
         truckOptions={allTruckOptions}
       />
