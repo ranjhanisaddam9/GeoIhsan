@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Modal } from "./_components/Modal";
 import { rangeForPreset, type DatePresetKey } from "./_components/date-presets";
 import { isWithinDateRange } from "./_components/date-utils";
+import { inputClass } from "./_components/ui";
+import { TopFivePanel, type TopFiveTransaction } from "./top-five-panel";
+import type { Option } from "./waitlist-shared";
 
 // Same figures the Income Statement report shows, summarised per period.
 export type SummaryTransaction = {
@@ -25,6 +28,7 @@ const TABS: { key: DatePresetKey; label: string }[] = [
   { key: "last_month", label: "Last Month" },
   { key: "year", label: "This Year" },
   { key: "last_year", label: "Last Year" },
+  { key: "custom", label: "Custom Date" },
 ];
 
 function formatMoney(n: number) {
@@ -76,19 +80,38 @@ function Card({
   );
 }
 
+// The dashboard's single date filter: drives the summary cards and the Top 5
+// panel below them.
 export function PeriodSummaryTabs({
   transactions,
   expenses,
+  topFiveTransactions,
+  truckOptions,
+  driverOptions,
+  clientOptions,
 }: {
   transactions: SummaryTransaction[];
   expenses: SummaryExpense[];
+  topFiveTransactions: TopFiveTransaction[];
+  truckOptions: Option[];
+  driverOptions: Option[];
+  clientOptions: Option[];
 }) {
+  const initial = rangeForPreset("month");
   const [tab, setTab] = useState<DatePresetKey>("month");
+  const [from, setFrom] = useState(initial?.from ?? "");
+  const [to, setTo] = useState(initial?.to ?? "");
   const [expensesOpen, setExpensesOpen] = useState(false);
 
-  const range = rangeForPreset(tab);
-  const from = range?.from ?? "";
-  const to = range?.to ?? "";
+  // "custom" keeps the current range and unlocks the date inputs.
+  function selectTab(key: DatePresetKey) {
+    setTab(key);
+    const range = rangeForPreset(key);
+    if (range) {
+      setFrom(range.from);
+      setTo(range.to);
+    }
+  }
 
   const sum = (nums: number[]) => nums.reduce((total, n) => total + n, 0);
 
@@ -115,7 +138,10 @@ export function PeriodSummaryTabs({
     .map(([category, total]) => ({ category, total }))
     .sort((a, b) => b.total - a.total);
 
-  const tabLabel = TABS.find((t) => t.key === tab)?.label ?? "";
+  const tabLabel =
+    tab === "custom"
+      ? `${from || "…"} to ${to || "…"}`
+      : (TABS.find((t) => t.key === tab)?.label ?? "");
 
   return (
     <div className="flex flex-col gap-4">
@@ -124,7 +150,7 @@ export function PeriodSummaryTabs({
           <button
             key={t.key}
             type="button"
-            onClick={() => setTab(t.key)}
+            onClick={() => selectTab(t.key)}
             className={
               tab === t.key
                 ? "-mb-px border-b-2 border-green-600 px-3 py-2 text-sm font-semibold text-green-700 dark:text-green-400"
@@ -135,6 +161,24 @@ export function PeriodSummaryTabs({
           </button>
         ))}
       </div>
+
+      {tab === "custom" && (
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className={inputClass}
+          />
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">to</span>
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card label="Net Income" value={netIncome} />
@@ -195,6 +239,17 @@ export function PeriodSummaryTabs({
           </table>
         </div>
       </Modal>
+
+      <div className="mt-6">
+        <TopFivePanel
+          transactions={topFiveTransactions}
+          dateFrom={from}
+          dateTo={to}
+          truckOptions={truckOptions}
+          driverOptions={driverOptions}
+          clientOptions={clientOptions}
+        />
+      </div>
     </div>
   );
 }

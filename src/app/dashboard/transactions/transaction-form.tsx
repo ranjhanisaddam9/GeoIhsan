@@ -197,6 +197,13 @@ export function TransactionForm({
   >(null);
 
   const isDetails = mode === "details";
+  const isEdit = mode === "edit";
+
+  // Edit-only Balance Adjustment: settles some or all of the outstanding
+  // fare balance by adding it to Advance Paid (the receipt's "Amount
+  // Received") on save. Starts at 0; clicking into it fills in the Balance
+  // Amount, so a straight save clears the balance to 0.
+  const [balanceAdjustment, setBalanceAdjustment] = useState("0.00");
 
   function set<K extends keyof TransactionFormValues>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -345,6 +352,8 @@ export function TransactionForm({
       return;
     }
 
+    const adjustment = isEdit ? toNumber(balanceAdjustment) : 0;
+
     // Opened synchronously (before any await) so browsers don't treat it as
     // a blocked popup — redirected to the receipt once the save resolves.
     // No noopener/noreferrer: those make window.open() return null, and we
@@ -373,7 +382,7 @@ export function TransactionForm({
       loading_labour_charges: toNumber(form.loading_labour_charges),
       fare_charges: toNumber(form.fare_charges),
       extra_charges: toNumber(form.extra_charges),
-      advance_fare: toNumber(form.advance_fare),
+      advance_fare: toNumber(form.advance_fare) + adjustment,
       commission_amount: toNumber(form.commission_amount),
       commission_paid: toNumber(form.commission_paid),
       commission_discount: toNumber(form.commission_discount),
@@ -416,6 +425,13 @@ export function TransactionForm({
     }
 
     const savedId = (data as unknown as { id: string }).id;
+
+    // The adjustment now lives in Advance Paid, so the form (if it stays
+    // open) shows the settled figures and a fresh 0 adjustment.
+    if (adjustment !== 0) {
+      setForm((f) => ({ ...f, advance_fare: formatMoney(toNumber(f.advance_fare) + adjustment) }));
+      setBalanceAdjustment("0.00");
+    }
 
     if (printWindow) {
       printWindow.location.href = `/dashboard/transactions/${savedId}/receipt`;
@@ -707,7 +723,9 @@ export function TransactionForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div
+          className={`grid grid-cols-1 gap-4 ${isEdit ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}
+        >
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Total Amount
@@ -742,6 +760,26 @@ export function TransactionForm({
               {formatMoney(fareBalance)}
             </div>
           </div>
+
+          {isEdit && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Balance Adjustment
+              </label>
+              <input
+                inputMode="decimal"
+                value={balanceAdjustment}
+                onFocus={(e) => {
+                  if (toNumber(balanceAdjustment) === 0 && fareBalance > 0) {
+                    setBalanceAdjustment(formatMoney(fareBalance));
+                    requestAnimationFrame(() => e.target.select());
+                  }
+                }}
+                onChange={(e) => setBalanceAdjustment(normalizeNumeric(e.target.value))}
+                className={inputClass}
+              />
+            </div>
+          )}
         </div>
 
         <hr className="border-zinc-200 dark:border-zinc-800" />
