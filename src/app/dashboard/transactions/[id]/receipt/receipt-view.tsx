@@ -147,8 +147,10 @@ function ReceiptCard({
         className="flex min-h-[207mm] w-full max-w-[148mm] flex-col overflow-hidden rounded-lg border-0 bg-white p-[7.5pt] text-[9.5pt] text-black print:max-w-none print:min-w-0 print:w-auto print:rounded-none print:border-0"
       >
         {/* Bled to the page edges — the A5 page has no margin of its own.
-            The 3.08 aspect puts it at ~48mm tall across A5's 148mm. */}
-        <div className="-mx-[7.5pt] -mt-[7.5pt]">
+            The 3.08 aspect puts it at ~48mm tall across A5's 148mm. Like the
+            footer, it's invisible (not removed) in print: the paper carries
+            its own header and footer, and the content must stay where it is. */}
+        <div className="-mx-[7.5pt] -mt-[7.5pt] print:invisible">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/Banner-Header.webp"
@@ -305,7 +307,7 @@ function ReceiptCard({
             they drop out at fine-print sizes or in printer-dithered grey. */}
         <div
           dir="rtl"
-          className={`mt-[6pt] space-y-[2pt] text-right text-[9pt] leading-[1.7] text-black ${notoNaskh.className}`}
+          className={`mt-[6pt] space-y-[2pt] text-right text-[9pt] leading-[1.7] text-black print:invisible ${notoNaskh.className}`}
         >
           <p className="font-bold">نوٹ:</p>
           <p className="pe-[4pt]">
@@ -324,7 +326,7 @@ function ReceiptCard({
             keeps it from being dropped as a background when printing. */}
         <div
           aria-hidden="true"
-          className="-mx-[7.5pt] mt-[5pt] h-[2.3pt]"
+          className="-mx-[7.5pt] mt-[5pt] h-[2.3pt] print:invisible"
           style={{
             backgroundImage:
               "linear-gradient(90deg, #224c4e 0%, #b98438 50%, #224c4e 100%)",
@@ -333,7 +335,7 @@ function ReceiptCard({
           }}
         />
 
-        <div className="mt-[2pt] text-[8pt] text-zinc-900">
+        <div className="mt-[2pt] text-[8pt] text-zinc-900 print:invisible">
           {/* Pinned LTR so Address stays left and Proprietor right even on an
               Urdu or Sindhi receipt, where the card itself runs RTL. */}
           <div dir="ltr" className="flex items-baseline justify-between gap-4">
